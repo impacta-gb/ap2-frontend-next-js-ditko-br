@@ -1,14 +1,12 @@
-# Sistema de Achados e Perdidos - Frontend
+# Lost & Found - Sistema de Achados e Perdidos
 
-Frontend oficial do Sistema de Achados e Perdidos, desenvolvido em Next.js para consumo das APIs FastAPI do ecossistema Ditko.br.
+Frontend oficial do sistema Lost & Found, desenvolvido em Next.js para consumo das APIs FastAPI.
 
 ## Sobre o projeto
 
 Este repositório representa a camada de interface do mesmo sistema descrito no backend, mantendo o mesmo domínio de negócio e as mesmas entidades.
 
 O sistema permite o registro, busca e devolução de itens perdidos, conectando pessoas que encontraram objetos com seus proprietários legítimos.
-
-Projeto desenvolvido pelo grupo Ditko.br para a disciplina de Frameworks Full Stack, ministrada pelo professor Giovani Bontempo na Faculdade Impacta.
 
 ### Entidades principais
 
@@ -190,7 +188,3 @@ Integrantes:
 - Ryan Rodrigues Cordeiro
 - Felipe Wilson Viana
 - Iago Rozales
-
----
-
-Projeto Acadêmico - Frameworks Full Stack | Prof. Giovani Bontempo | Faculdade Impacta
