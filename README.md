@@ -1,6 +1,6 @@
 # Sistema de Achados e Perdidos - Frontend
 
-<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/fbb04a14-1f3c-49dd-910f-16b9dca63255" />
+<img width="1024" height="559" alt="image" src="https://i.imgur.com/J3bQLvW.png"/>
 
 Frontend oficial do sistema Lost & Found, desenvolvido em Next.js para consumo das APIs FastAPI.
 
