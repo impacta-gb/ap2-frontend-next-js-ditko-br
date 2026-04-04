@@ -1,4 +1,6 @@
-# Lost & Found - Sistema de Achados e Perdidos
+# Sistema de Achados e Perdidos - Frontend
+
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/fbb04a14-1f3c-49dd-910f-16b9dca63255" />
 
 Frontend oficial do sistema Lost & Found, desenvolvido em Next.js para consumo das APIs FastAPI.
 
@@ -177,14 +179,52 @@ docker run -p 3000:3000 achados-perdidos-frontend
 
 ### Grupo Ditko.br
 
-Projeto desenvolvido para a disciplina de Frameworks Full Stack.
+Projeto desenvolvido para a disciplina de Frameworks Full Stack:
 
-Instituição: Faculdade Impacta
+**Instituição:** Faculdade Impacta
 
-Professor: Giovani Bontempo
+**Professor:**
 
-Integrantes:
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/giovbon">
+        <img src="https://github.com/giovbon.png" width="100px;" alt="Giovani Bontempo"/><br>
+        <sub><b>Giovani Bontempo</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
-- Ryan Rodrigues Cordeiro
-- Felipe Wilson Viana
-- Iago Rozales
+**Integrantes:**
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Ryanditko">
+        <img src="https://github.com/Ryanditko.png" width="100px;" alt="Ryan Rodrigues Cordeiro"/><br>
+        <sub><b>Ryan Rodrigues Cordeiro</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Felipewv93">
+        <img src="https://github.com/Felipewv93.png" width="100px;" alt="Felipe Wilson Viana"/><br>
+        <sub><b>Felipe Wilson Viana</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Iago-RM">
+        <img src="https://github.com/Iago-RM.png" width="100px;" alt="Iago Rozales"/><br>
+        <sub><b>Iago Rozales</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
+
+## Contato
+
+Para mais informações sobre o projeto, entre em contato através do repositório no GitHub.
+
+---
+
+Projeto Acadêmico - Frameworks Full Stack | Prof. Giovani Bontempo | Faculdade Impacta
