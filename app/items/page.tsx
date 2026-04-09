@@ -1,0 +1,145 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Card, CardBody, CardHeader, Button, Badge, Loading } from '@/src/components';
+import { useMockData } from '@/src/hooks/useMockData';
+import { mockItems } from '@/src/lib/mockData';
+import { translateStatus } from '@/src/lib/utils';
+import { Plus, MapPin, Calendar, Tag, Search } from 'lucide-react';
+
+export default function ItemsPage() {
+  const [page, setPage] = useState(1);
+  const { data: items, loading } = useMockData(mockItems);
+
+  if (loading) return <Loading />;
+
+  const itemsPerPage = 10;
+  const startIndex = (page - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedItems = items?.data.slice(startIndex, endIndex) || [];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated background blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 right-1/4 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
+      </div>
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2">
+              Itens Encontrados
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+              <Tag size={18} />
+              Total: <span className="font-bold text-blue-600 dark:text-blue-400">{items?.total || 0}</span> itens
+            </p>
+          </div>
+          <Link href="/items/new">
+            <Button variant="primary" size="lg" className="w-full sm:w-auto">
+              <Plus size={20} />
+              Registrar Novo Item
+            </Button>
+          </Link>
+        </div>
+
+        {/* Items Grid */}
+        {paginatedItems && paginatedItems.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {paginatedItems.map((item: any, index: number) => (
+              <Link key={item.id} href={`/items/${item.id}`} style={{ animationDelay: `${index * 0.1}s` }}>
+                <Card className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 h-full group overflow-hidden animate-scale-in hover-lift border-2 border-transparent hover:border-blue-300 dark:hover:border-blue-600">
+                  <CardHeader className="pb-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-700">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {item.nome}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                          <Tag size={14} />
+                          {item.categoria}
+                        </p>
+                      </div>
+                      <Badge
+                        label={translateStatus(item.status)}
+                        variant={
+                          item.status === 'disponível'
+                            ? 'success'
+                            : item.status === 'devolvido'
+                            ? 'info'
+                            : 'warning'
+                        }
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardBody>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4">
+                      {item.descricao}
+                    </p>
+                    <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
+                      <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                        <MapPin size={16} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                        <span className="font-medium">{item.local?.tipo}</span>
+                      </div>
+                      <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                        <Calendar size={16} className="text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                        <span className="font-medium">{item.data_encontro}</span>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Card className="animate-scale-in">
+            <CardBody className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full mb-4 group hover:scale-110 transition-transform">
+                <Search size={48} className="text-gray-400 dark:text-gray-600" />
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 text-lg font-semibold mb-4">
+                Nenhum item encontrado
+              </p>
+              <p className="text-gray-500 dark:text-gray-500 mb-6">
+                Seja o primeiro a registrar um item encontrado
+              </p>
+              <Link href="/items/new">
+                <Button variant="primary">
+                  <Plus size={20} />
+                  Registrar Primeiro Item
+                </Button>
+              </Link>
+            </CardBody>
+          </Card>
+        )}
+
+        {/* Pagination */}
+        {items?.total && items.total > itemsPerPage && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Anterior
+            </Button>
+            <span className="text-gray-600 dark:text-gray-400 font-semibold">
+              Página {page}
+            </span>
+            <Button
+              variant="outline"
+              disabled={page * itemsPerPage >= items.total}
+              onClick={() => setPage(page + 1)}
+            >
+              Próxima
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
