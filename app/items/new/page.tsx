@@ -77,26 +77,26 @@ export default function NewItemPage() {
     })) || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
-              <Plus size={32} className="text-white" />
+        <div className="mb-12 animate-slide-up">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
+              <Plus size={40} className="text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-1">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2">
                 Registrar Novo Item
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Preencha os dados do item encontrado com cuidado
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                Preencha os dados do item encontrado com precisão
               </p>
             </div>
           </div>
@@ -106,43 +106,52 @@ export default function NewItemPage() {
         {submitSuccess && (
           <Alert
             type="success"
-            title="Sucesso!"
+            title="🎉 Sucesso!"
             message="Item registrado com sucesso. Redirecionando..."
             closeable={false}
+            animated
           />
         )}
 
-        {/* Form */}
-        <Card className="shadow-2xl">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Package size={24} className="text-blue-600 dark:text-blue-400" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Informações do Item</h2>
+        {/* Form Card */}
+        <Card hover gradient className="shadow-2xl border-2 border-gradient-to-r from-blue-200 to-purple-200 dark:border-purple-700/50">
+          <CardHeader variant="gradient" color="blue">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Package size={24} className="text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Informações do Item</h2>
+                <p className="text-blue-100 text-sm">Detalhes do achado</p>
+              </div>
             </div>
           </CardHeader>
-          <CardBody>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Nome */}
-              <Input
-                label="Nome/Descrição Breve"
-                name="nome"
-                value={formData.nome}
-                onChange={handleChange}
-                error={errors.nome}
-                placeholder="Ex: Chaves prateadas"
-              />
 
-              {/* Categoria */}
-              <Input
-                label="Categoria"
-                name="categoria"
-                value={formData.categoria}
-                onChange={handleChange}
-                error={errors.categoria}
-                placeholder="Ex: Eletrônicos, Documentos, Acessórios"
-              />
+          <CardBody padding="lg">
+            <form onSubmit={handleSubmit} className="space-y-7">
+              {/* Row 1: Nome and Categoria */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input
+                  label="Nome/Descrição Breve"
+                  name="nome"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  error={errors.nome}
+                  placeholder="Ex: Chaves prateadas"
+                  icon={<Package size={20} />}
+                />
 
-              {/* Data de Encontro */}
+                <Input
+                  label="Categoria"
+                  name="categoria"
+                  value={formData.categoria}
+                  onChange={handleChange}
+                  error={errors.categoria}
+                  placeholder="Ex: Eletrônicos"
+                />
+              </div>
+
+              {/* Row 2: Data de Encontro */}
               <Input
                 label="Data de Encontro"
                 name="data_encontro"
@@ -152,39 +161,40 @@ export default function NewItemPage() {
                 error={errors.data_encontro}
               />
 
-              {/* Descrição */}
+              {/* Row 3: Descrição */}
               <Textarea
                 label="Descrição Detalhada"
                 name="descricao"
                 value={formData.descricao}
                 onChange={handleChange}
                 error={errors.descricao}
-                placeholder="Descreva o item em detalhes: cores, marca, estado, etc."
+                placeholder="Descreva o item em detalhes: cores, marca, estado, condições especiais, etc."
                 rows={5}
               />
 
-              {/* Local */}
-              <Select
-                label="Local onde foi encontrado"
-                name="local_id"
-                value={formData.local_id}
-                onChange={handleChange}
-                error={errors.local_id}
-                options={localOptions}
-              />
+              {/* Row 4: Seleções */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Select
+                  label="Local onde foi encontrado"
+                  name="local_id"
+                  value={formData.local_id}
+                  onChange={handleChange}
+                  error={errors.local_id}
+                  options={localOptions}
+                />
 
-              {/* Responsável */}
-              <Select
-                label="Responsável pelo registro"
-                name="responsavel_id"
-                value={formData.responsavel_id}
-                onChange={handleChange}
-                error={errors.responsavel_id}
-                options={responsavelOptions}
-              />
+                <Select
+                  label="Responsável pelo registro"
+                  name="responsavel_id"
+                  value={formData.responsavel_id}
+                  onChange={handleChange}
+                  error={errors.responsavel_id}
+                  options={responsavelOptions}
+                />
+              </div>
 
               {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t-2 border-gradient-to-r from-blue-200 to-purple-200 dark:border-purple-700/50">
                 <Button
                   type="submit"
                   variant="primary"
@@ -192,13 +202,12 @@ export default function NewItemPage() {
                   fullWidth
                   loading={submitting}
                   disabled={submitting}
+                  icon={<Save size={20} />}
                 >
-                  <Save size={20} />
                   {submitting ? 'Salvando...' : 'Registrar Item'}
                 </Button>
                 <Link href="/items" className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" fullWidth>
-                    <X size={20} />
+                  <Button variant="outline" size="lg" fullWidth icon={<X size={20} />}>
                     Cancelar
                   </Button>
                 </Link>
