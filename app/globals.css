@@ -32,7 +32,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
+    --background: #0a0e27;
     --foreground: #f1f5f9;
     --primary-light: #1e3a8a;
     --accent-light: #4c1d95;
@@ -43,43 +43,59 @@
   }
 }
 
+* {
+  scroll-behavior: smooth;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--neutral-100);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--neutral-300);
-  border-radius: 4px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 10px;
+  border: 3px solid var(--neutral-100);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--neutral-400);
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
 }
 
 @media (prefers-color-scheme: dark) {
   ::-webkit-scrollbar-track {
-    background: var(--neutral-800);
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 10px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--neutral-700);
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border: 3px solid rgba(15, 23, 42, 0.8);
+    border-radius: 10px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--neutral-600);
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
   }
 }
 
