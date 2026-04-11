@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/src/components";
+import { Navbar, Footer } from "@/src/components";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,11 +13,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Sistema de Achados e Perdidos",
-  description: "Sistema para encontrar e devolver itens perdidos",
+  title: "Lost & Found - Sistema de Achados e Perdidos",
+  description: "Sistema para encontrar e devolver itens perdidos com facilidade e segurança",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Lost & Found",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="pt-BR"
@@ -26,11 +40,7 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col bg-gray-50 dark:bg-black">
         <Navbar />
         <main className="flex-1">{children}</main>
-        <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-8 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 text-center text-gray-600 dark:text-gray-400">
-            <p>© 2026 Sistema de Achados e Perdidos - Projeto Acadêmico</p>
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );
