@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="favGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Main circle background -->
+  <circle cx="90" cy="90" r="85" fill="url(#favGradient)" filter="url(#shadow)"/>
+  
+  <!-- Inner lighter circle for contrast -->
+  <circle cx="90" cy="90" r="80" fill="url(#favGradient)" opacity="0.95"/>
+  
+  <!-- Search magnifying glass with rounded corners -->
+  <g transform="translate(45, 45)">
+    <!-- Magnifying glass circle -->
+    <circle cx="35" cy="35" r="28" fill="none" stroke="white" stroke-width="6" opacity="0.95"/>
+    
+    <!-- Magnifying glass handle -->
+    <line x1="55" y1="55" x2="70" y2="70" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.95"/>
+    
+    <!-- Center dot for found item -->
+    <circle cx="35" cy="35" r="6" fill="white" opacity="0.95"/>
+    
+    <!-- Small rings representing search/discovery -->
+    <circle cx="35" cy="35" r="16" fill="none" stroke="white" stroke-width="2" opacity="0.6" stroke-dasharray="4,2"/>
+  </g>
+  
+  <!-- Plus sign for "add/register" -->
+  <g transform="translate(90, 45)" opacity="0.9">
+    <line x1="-8" y1="0" x2="8" y2="0" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="-8" x2="0" y2="8" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Check mark for "success/return" -->
+  <g transform="translate(120, 105)" opacity="0.9">
+    <polyline points="0,12 8,20 20,0" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Decorative dots representing connection -->
+  <circle cx="60" cy="75" r="3" fill="white" opacity="0.7"/>
+  <circle cx="120" cy="75" r="3" fill="white" opacity="0.7"/>
+  <circle cx="60" cy="115" r="3" fill="white" opacity="0.7"/>
+  <circle cx="120" cy="115" r="3" fill="white" opacity="0.7"/>
+</svg>
