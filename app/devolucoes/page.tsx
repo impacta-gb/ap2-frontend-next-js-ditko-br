@@ -128,13 +128,39 @@ export default function DevolucoesPage() {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardBody className="text-center py-12">
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
+          <div className="relative overflow-hidden rounded-3xl border-2 border-dashed border-emerald-200 dark:border-emerald-800 bg-gradient-to-br from-emerald-50/40 via-slate-50/30 to-green-50/40 dark:from-emerald-950/20 dark:via-slate-950/30 dark:to-green-950/20 backdrop-blur-sm p-16 md:p-20 animate-scale-in hover:border-emerald-400 dark:hover:border-emerald-600 transition-all duration-300">
+            {/* Decorative gradient blobs */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-emerald-400 to-green-400 opacity-10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-emerald-400 to-teal-400 opacity-10 rounded-full blur-3xl" />
+            
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center">
+              {/* Icon background with animation */}
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-green-400 rounded-2xl blur-xl opacity-20 animate-pulse" />
+                <div className="relative inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/40 dark:to-green-900/40 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
+                  <RotateCcw size={56} className="text-transparent bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text" />
+                </div>
+              </div>
+              
+              {/* Text content */}
+              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-green-400 mb-3">
                 Nenhuma devolução registrada
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 text-lg mb-8 max-w-md leading-relaxed">
+                Nenhuma devolução foi registrada até agora. Quando alguém devolver um item, ele aparecerá aqui.
               </p>
-            </CardBody>
-          </Card>
+              
+              {/* Action button */}
+              <Link href="/devolucoes/new">
+                <Button variant="primary" size="lg" className="group">
+                  <RotateCcw size={22} />
+                  Registrar Devolução
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 opacity-0 group-hover:opacity-20 transition-opacity" />
+                </Button>
+              </Link>
+            </div>
+          </div>
         )}
 
         {/* Pagination */}
