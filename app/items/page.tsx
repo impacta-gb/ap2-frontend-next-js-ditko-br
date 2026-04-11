@@ -96,25 +96,39 @@ export default function ItemsPage() {
             ))}
           </div>
         ) : (
-          <Card className="animate-scale-in">
-            <CardBody className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full mb-4 group hover:scale-110 transition-transform">
-                <Search size={48} className="text-gray-400 dark:text-gray-600" />
+          <div className="relative overflow-hidden rounded-3xl border-2 border-dashed border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50/40 via-slate-50/30 to-purple-50/40 dark:from-blue-950/20 dark:via-slate-950/30 dark:to-purple-950/20 backdrop-blur-sm p-16 md:p-20 animate-scale-in hover:border-blue-400 dark:hover:border-blue-600 transition-all duration-300">
+            {/* Decorative gradient blobs */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-blue-400 to-purple-400 opacity-10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-blue-400 to-cyan-400 opacity-10 rounded-full blur-3xl" />
+            
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center">
+              {/* Icon background with animation */}
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-400 rounded-2xl blur-xl opacity-20 animate-pulse" />
+                <div className="relative inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
+                  <Search size={56} className="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text" />
+                </div>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 text-lg font-semibold mb-4">
+              
+              {/* Text content */}
+              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-3">
                 Nenhum item encontrado
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 text-lg mb-8 max-w-md leading-relaxed">
+                Seja o primeiro a registrar um item encontrado no nosso sistema
               </p>
-              <p className="text-gray-500 dark:text-gray-500 mb-6">
-                Seja o primeiro a registrar um item encontrado
-              </p>
+              
+              {/* Action button */}
               <Link href="/items/new">
-                <Button variant="primary">
-                  <Plus size={20} />
+                <Button variant="primary" size="lg" className="group">
+                  <Plus size={22} />
                   Registrar Primeiro Item
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity" />
                 </Button>
               </Link>
-            </CardBody>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Pagination */}
