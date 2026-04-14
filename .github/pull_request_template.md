@@ -1,32 +1,29 @@
-## Description
+## Descrição
 
-A clear and concise description of the PR.
+Uma descrição clara e concisa do PR.
 
-Use this section for review hints, explanations or discussion points/todos.
+Use esta seção para dicas de revisão, explicações ou pontos de discussão/tarefas.
 
-- Summary of changes
-- Reasoning
-- Additional context
+- Resumo das alterações  
+- Justificativa  
+- Contexto adicional  
 
-## Screenshots
+## Capturas de Tela
 
-Screenshots or a screen recording of the visual changes associated with this PR.
+Capturas de tela ou uma gravação de tela das alterações visuais associadas a este PR.
 
-(Feel free to delete this section for non-visual changes.)
+(Sinta-se à vontade para remover esta seção em caso de alterações não visuais.)
 
+## Documentação
 
-## Docs
+Adicione quaisquer notas que ajudem a documentar a funcionalidade/alterações. Não precisa ser algo muito elaborado, apenas algumas palavras e/ou trechos de código.
 
-Add any notes that help to document the feature/changes. Doesn't need to be your best writing, just a few words and/or code snippets.
+## Pronto?
 
+Você fez alguma das seguintes ações? Caso não, sem problemas, mas se puder, ajuda bastante.
 
-## Ready?
-
-Did you do any of the following? If not, no worries, but if you can
-it's really helpful.
-
-- [ ] Documented what's new
-- [ ] Added in-code documentation (wherever needed)
-- [ ] Wrote tests for new components/features
-- [ ] Ran the linter to ensure style guidelines were followed
-- [ ] Created a demo
+- [ ] Documentou o que há de novo  
+- [ ] Adicionou documentação no código (quando necessário)  
+- [ ] Escreveu testes para novos componentes/funcionalidades  
+- [ ] Executou o linter para garantir que as diretrizes de estilo foram seguidas  
+- [ ] Criou uma demo  
