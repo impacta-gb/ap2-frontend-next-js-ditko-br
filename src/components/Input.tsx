@@ -1,7 +1,7 @@
 'use client';
 
 import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -22,7 +22,8 @@ export const Input = ({
   ...props
 }: InputProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const inputId = id || `input-${Math.random()}`;
+  const generatedInputId = useId();
+  const inputId = id || `input-${generatedInputId}`;
   const inputType = showPasswordToggle && showPassword ? 'text' : type;
 
   return (
@@ -86,7 +87,8 @@ export const Textarea = ({
   id,
   ...props
 }: TextareaProps) => {
-  const textareaId = id || `textarea-${Math.random()}`;
+  const generatedTextareaId = useId();
+  const textareaId = id || `textarea-${generatedTextareaId}`;
 
   return (
     <div className="w-full">
@@ -126,7 +128,8 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = ({ label, error, options, id, ...props }: SelectProps) => {
-  const selectId = id || `select-${Math.random()}`;
+  const generatedSelectId = useId();
+  const selectId = id || `select-${generatedSelectId}`;
 
   return (
     <div className="w-full">
