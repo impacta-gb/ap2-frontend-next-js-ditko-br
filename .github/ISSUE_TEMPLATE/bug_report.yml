@@ -1,0 +1,95 @@
+name: "Relato de bug"
+description: "Reporte um problema para ajudar a melhorar o projeto"
+title: "[BUG] "
+labels:
+  - "bug"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por abrir uma issue.
+        Preencha os campos abaixo com o máximo de detalhes possível.
+
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição
+      description: Forneça um resumo claro e objetivo do problema.
+      placeholder: Descreva o problema encontrado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: comportamento-esperado
+    attributes:
+      label: Comportamento esperado
+      description: Descreva o que deveria acontecer.
+      placeholder: Explique o resultado esperado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: comportamento-atual
+    attributes:
+      label: Comportamento atual
+      description: Descreva o que está acontecendo atualmente.
+      placeholder: Explique o resultado atual.
+    validations:
+      required: true
+
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      description: Liste as etapas necessárias para reproduzir o problema.
+      placeholder: |
+        1. Vá para...
+        2. Clique em...
+        3. Veja o erro...
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidências
+      description: Inclua logs, mensagens de erro, capturas de tela ou qualquer informação relevante.
+      placeholder: Cole aqui logs, prints ou links.
+
+  - type: input
+    id: versao
+    attributes:
+      label: Versão
+      description: Informe a versão da aplicação/projeto.
+      placeholder: ex. v1.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: plataforma
+    attributes:
+      label: Plataforma
+      description: Informe o sistema operacional/plataforma.
+      placeholder: ex. Windows 11, macOS 14, Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: input
+    id: subsistema
+    attributes:
+      label: Subsistema
+      description: Informe qual parte do sistema foi afetada.
+      placeholder: ex. autenticação, listagem de itens, devoluções
+
+  - type: input
+    id: navegador
+    attributes:
+      label: Navegador (se aplicável)
+      description: Informe o navegador e versão.
+      placeholder: ex. Chrome 123, Firefox 126
+
+  - type: textarea
+    id: info-adicional
+    attributes:
+      label: Outras informações relevantes
+      description: Adicione qualquer outro contexto que possa ajudar na análise.
