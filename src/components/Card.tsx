@@ -1,4 +1,4 @@
-interface CardProps {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
@@ -9,13 +9,15 @@ export const Card = ({
   children, 
   className = '', 
   hover = true,
-  gradient = false 
+  gradient = false,
+  ...props
 }: CardProps) => {
   const hoverClass = hover ? 'hover:shadow-2xl hover:-translate-y-2' : '';
   const gradientClass = gradient ? 'bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20' : 'bg-white dark:bg-gray-800';
   
   return (
     <div
+      {...props}
       className={`${gradientClass} rounded-2xl shadow-lg hover:shadow-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300 overflow-hidden ${hoverClass} ${className}`}
     >
       {children}

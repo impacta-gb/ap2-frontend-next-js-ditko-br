@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Home, Package, Plus, RotateCcw } from 'lucide-react';
+import { Search, Home, Package, Plus, RotateCcw, Users } from 'lucide-react';
 
 export const Navbar = () => {
   const pathname = usePathname();
@@ -14,6 +14,7 @@ export const Navbar = () => {
     { href: '/items', label: 'Itens', icon: Package },
     { href: '/items/new', label: 'Registrar', icon: Plus },
     { href: '/devolucoes', label: 'Devoluções', icon: RotateCcw },
+    { href: '/responsaveis', label: 'Responsáveis', icon: Users },
   ];
 
   return (
