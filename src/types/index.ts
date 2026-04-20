@@ -104,3 +104,21 @@ export interface CreateReclamanteRequest {
   documento: string;
   telefone: string;
 }
+
+export interface CreateResponsavelRequest {
+  nome: string;
+  cargo: string;
+  telefone: string;
+}
+
+export interface UpdateResponsavelRequest {
+  nome: string;
+  cargo: string;
+  telefone: string;
+}
+
+export interface PatchResponsavelRequest {
+  nome?: string;
+  cargo?: string;
+  telefone?: string;
+}
