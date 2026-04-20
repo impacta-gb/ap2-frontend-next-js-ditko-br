@@ -1,16 +1,47 @@
-import { ApiError, ApiResponse, ApiListResponse } from "../types";
+import {
+  ApiError,
+  ApiListResponse,
+  CreateResponsavelRequest,
+  PatchResponsavelRequest,
+  Responsavel,
+  UpdateResponsavelRequest,
+} from "../types";
 
 const API_URLS = {
   ITEM: process.env.NEXT_PUBLIC_API_ITEM_URL || "http://localhost:8001",
   LOCAL: process.env.NEXT_PUBLIC_API_LOCAL_URL || "http://localhost:8002",
-  RESPONSAVEL:
-    process.env.NEXT_PUBLIC_API_RESPONSAVEL_URL || "http://localhost:8003",
+  RESPONSAVEL: "/api/proxy/responsavel",
   DEVOLUCAO: process.env.NEXT_PUBLIC_API_DEVOLUCAO_URL || "http://localhost:8004",
   RECLAMANTE:
     process.env.NEXT_PUBLIC_API_RECLAMANTE_URL || "http://localhost:8005",
 };
 
 class ApiClient {
+  private responsavelPath(path = ""): string {
+    const normalizedBase = API_URLS.RESPONSAVEL.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/responsaveis${path}`;
+  }
+
+  private extractResponsavel(payload: unknown): Responsavel {
+    if (payload && typeof payload === "object") {
+      const obj = payload as Record<string, unknown>;
+
+      if (obj.data && typeof obj.data === "object" && !Array.isArray(obj.data)) {
+        return obj.data as Responsavel;
+      }
+
+      if (
+        obj.responsavel &&
+        typeof obj.responsavel === "object" &&
+        !Array.isArray(obj.responsavel)
+      ) {
+        return obj.responsavel as Responsavel;
+      }
+    }
+
+    return payload as Responsavel;
+  }
+
   private async request<T>(
     url: string,
     options: RequestInit = {}
@@ -97,23 +128,63 @@ class ApiClient {
   }
 
   // Responsável endpoints
-  async getResponsaveis(page = 1, limit = 10): Promise<ApiListResponse<any>> {
+  async getResponsaveis(page = 1, limit = 10): Promise<ApiListResponse<Responsavel>> {
     return this.request(
-      `${API_URLS.RESPONSAVEL}/responsaveis?page=${page}&limit=${limit}`,
+      `${this.responsavelPath("/")}?page=${page}&limit=${limit}`,
       { method: "GET" }
     );
   }
 
-  async getResponsavelById(id: string): Promise<any> {
-    return this.request(`${API_URLS.RESPONSAVEL}/responsaveis/${id}`, {
+  async getResponsavelById(id: string): Promise<Responsavel> {
+    const response = await this.request<unknown>(this.responsavelPath(`/${id}`), {
+      method: "GET",
+    });
+    return this.extractResponsavel(response);
+  }
+
+  async getResponsaveisByAtivo(value: boolean): Promise<Responsavel[]> {
+    return this.request(this.responsavelPath(`/ativo/${value}`), {
       method: "GET",
     });
   }
 
-  async createResponsavel(data: any): Promise<any> {
-    return this.request(`${API_URLS.RESPONSAVEL}/responsaveis`, {
+  async createResponsavel(data: CreateResponsavelRequest): Promise<Responsavel> {
+    return this.request(this.responsavelPath("/"), {
       method: "POST",
       body: JSON.stringify(data),
+    });
+  }
+
+  async updateResponsavel(
+    id: string,
+    data: UpdateResponsavelRequest
+  ): Promise<Responsavel> {
+    return this.request(this.responsavelPath(`/${id}`), {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async patchResponsavel(
+    id: string,
+    data: PatchResponsavelRequest
+  ): Promise<Responsavel> {
+    return this.request(this.responsavelPath(`/${id}`), {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateResponsavelStatus(id: string, ativo: boolean): Promise<Responsavel> {
+    return this.request(this.responsavelPath(`/${id}/status`), {
+      method: "PATCH",
+      body: JSON.stringify({ ativo }),
+    });
+  }
+
+  async deleteResponsavel(id: string): Promise<void> {
+    return this.request(this.responsavelPath(`/${id}`), {
+      method: "DELETE",
     });
   }
 
