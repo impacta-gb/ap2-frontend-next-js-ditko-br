@@ -2,7 +2,16 @@
  * Formata uma data ISO para formato legível
  */
 export const formatDate = (date: string): string => {
-  return new Date(date).toLocaleDateString("pt-BR", {
+  if (!date || typeof date !== "string") {
+    return "Não informado";
+  }
+
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Não informado";
+  }
+
+  return parsed.toLocaleDateString("pt-BR", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -13,7 +22,16 @@ export const formatDate = (date: string): string => {
  * Formata uma data e hora ISO para formato legível
  */
 export const formatDateTime = (date: string): string => {
-  return new Date(date).toLocaleDateString("pt-BR", {
+  if (!date || typeof date !== "string") {
+    return "Não informado";
+  }
+
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Não informado";
+  }
+
+  return parsed.toLocaleDateString("pt-BR", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -26,6 +44,10 @@ export const formatDateTime = (date: string): string => {
  * Formata telefone brasileiro
  */
 export const formatPhone = (phone: string): string => {
+  if (!phone || typeof phone !== "string") {
+    return "Telefone não informado";
+  }
+
   const cleaned = phone.replace(/\D/g, "");
   if (cleaned.length === 11) {
     return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
