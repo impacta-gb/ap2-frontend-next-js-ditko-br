@@ -128,7 +128,7 @@ export default function NewLocalPage() {
               {/* Row 1: Nome and Categoria */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="tipo-local"
+                  label="tipo do local"
                   name="tipo"
                   value={formData.tipo}
                   onChange={handleChange}
@@ -138,12 +138,12 @@ export default function NewLocalPage() {
                 />
 
                 <Input
-                  label="Categoria"
-                  name="categoria"
-                  value={formData.descricao}
+                  label="Bairro"
+                  name="bairro"
+                  value={formData.bairro}
                   onChange={handleChange}
-                  error={errors.categoria}
-                  placeholder="Ex: Perto do metro paraíso"
+                  error={errors.bairro}
+                  placeholder="Ex: Vila mariana"
                 />
               </div>
 
@@ -159,18 +159,7 @@ export default function NewLocalPage() {
                 rows={5}
               />
 
-              {/* Row 3: Seleções */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Select
-                  label="Local onde foi encontrado"
-                  name="item_id"
-                  value={formData.item_id}
-                  onChange={handleChange}
-                  error={errors.local_id}
-                  options={localOptions}
-                />
 
-              </div>
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t-2 border-gradient-to-r from-blue-200 to-purple-200 dark:border-purple-700/50">
