@@ -56,10 +56,9 @@ export default function NewLocalPage() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.tipo.trim()) newErrors.nome = 'Nome é obrigatório';
-    if (!formData.descricao.trim()) newErrors.categoria = 'Categoria é obrigatória';
-    if (!formData.bairro) newErrors.data_encontro = 'Data de encontro é obrigatória';
-    if (!formData.item_id) newErrors.local_id = 'Local é obrigatório';
+    if (!formData.tipo.trim()) newErrors.tipo = 'Tipo é obrigatório';
+    if (!formData.descricao.trim()) newErrors.descricao = 'Descrição é obrigatória';
+    if (!formData.bairro.trim()) newErrors.bairro = 'Bairro é obrigatório';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -78,6 +77,7 @@ export default function NewLocalPage() {
         bairro: formData.bairro.trim()
       }
       await apiClient.createLocal(payload)
+      setSubmitSuccess(true);
 
       showAlert({
         type: 'success',
@@ -92,10 +92,11 @@ export default function NewLocalPage() {
         router.push('/locais')
       }, 2200)
     } catch{
+      setSubmitSuccess(false);
       showAlert({
         type: 'error',
         title: 'Erro ao salvar',
-        message: 'Não foi possível registrar o responsável neste momento.',
+        message: 'Não foi possível registrar o local neste momento.',
       });
 
     } finally {
@@ -166,7 +167,7 @@ export default function NewLocalPage() {
                   name="tipo"
                   value={formData.tipo}
                   onChange={handleChange}
-                  error={errors.nome}
+                  error={errors.tipo}
                   placeholder="Ex: Avenida"
                   icon={<Package size={20} />}
                 />
