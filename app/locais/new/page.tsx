@@ -103,11 +103,7 @@ export default function NewLocalPage() {
     }
 
   }
-  const localOptions =
-    mockLocais?.data?.map((local: any) => ({
-      value: local.id,
-      label: `${local.tipo} - ${local.bairro}`,
-    })) || [];
+
 
 
   return (
