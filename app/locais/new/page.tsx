@@ -97,6 +97,9 @@ export default function NewLocalPage() {
         title: 'Erro ao salvar',
         message: 'Não foi possível registrar o responsável neste momento.',
       });
+
+    } finally {
+      setSubmitting(false)
     }
   const localOptions =
     mockLocais?.data?.map((local: any) => ({
