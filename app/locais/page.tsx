@@ -31,6 +31,7 @@ const normalizeLocalArray = (payload: unknown): Local[] => {
     }
 
     if (Array.isArray(obj.data)) return obj.data as Local[];
+    if (Array.isArray(obj.locais)) return obj.locais as Local[];
     if (Array.isArray(obj.items)) return obj.items as Local[];
     if (Array.isArray(obj.results)) return obj.results as Local[];
   }
