@@ -6,13 +6,90 @@ import { Card, CardBody, CardHeader, Button, Loading, Alert } from '@/src/compon
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
 import { RotateCcw, Package, User, Calendar, ArrowRight, Plus } from 'lucide-react';
+import { Local, Responsavel} from '@/src/types';
+
+
+type FiltroAtivo = 'todos' | 'ativos' | 'inativos';
+
+interface LocalListState {
+  items: Local[];
+  total: number;
+  pages: number;
+}
+
+const LOCAIS_PER_PAGE = 10;
+
+const normalizeLocalArray = (payload: unknown): Local[] => {
+  if (Array.isArray(payload)) return payload as Local[];
+
+  if (payload && typeof payload === 'object') {
+    const obj = payload as Record<string, unknown>;
+
+    if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+      const dataObj = obj.data as Record<string, unknown>;
+      if (Array.isArray(dataObj.locais)) return dataObj.locais as Local[];
+    }
+
+    if (Array.isArray(obj.data)) return obj.data as Local[];
+    if (Array.isArray(obj.items)) return obj.items as Local[];
+    if (Array.isArray(obj.results)) return obj.results as Local[];
+  }
+
+  return [];
+};
+
+const normalizeTotal = (payload: unknown, fallback: number): number => {
+  if (payload && typeof payload === 'object') {
+    const obj = payload as Record<string, unknown>;
+    if (typeof obj.total === 'number') return obj.total;
+    if (typeof obj.count === 'number') return obj.count;
+
+    if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+      const dataObj = obj.data as Record<string, unknown>;
+      if (typeof dataObj.total === 'number') return dataObj.total;
+      if (typeof dataObj.count === 'number') return dataObj.count;
+    }
+  }
+
+  return fallback;
+};
+
+const normalizePages = (payload: unknown, total: number): number => {
+  if (payload && typeof payload === 'object') {
+    const obj = payload as Record<string, unknown>;
+    if (typeof obj.pages === 'number') return obj.pages;
+
+    if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+      const dataObj = obj.data as Record<string, unknown>;
+      if (typeof dataObj.pages === 'number') return dataObj.pages;
+    }
+  }
+
+  return Math.max(1, Math.ceil(total / LOCAIS_PER_PAGE));
+};
+
 
 export default function LocaisPage() {
   const [page, setPage] = useState(1);
-  const { data: locais, loading, error } = useFetch(
-    () => apiClient.getLocais(page, 10),
+  const { data: locais, loading, error } = useFetch<LocalListState>(
+    async () => {
+      const response = await apiClient.getLocais(page, LOCAIS_PER_PAGE);
+      const items = normalizeLocalArray(response);
+      const total = normalizeTotal(response, items.length);
+      const pages = normalizePages(response, total);
+
+      return {
+        items,
+        total,
+        pages,
+      };
+    },
     [page]
   );
+
+  const locaisItems = Array.isArray(locais?.items) ? locais.items : [];
+  const totalLocais = locais?.total || 0;
+  const totalPages = locais?.pages || 1;
 
   if (loading) return <Loading />;
   if (error)
@@ -45,7 +122,7 @@ export default function LocaisPage() {
               </h1>
             </div>
             <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2 ml-16">
-              Total: <span className="font-bold text-green-600 dark:text-green-400">{locais?.total || 0}</span> locais
+              Total: <span className="font-bold text-green-600 dark:text-green-400">{totalLocais}</span> locais
             </p>
           </div>
           <Link href="/locais/new">
@@ -57,9 +134,9 @@ export default function LocaisPage() {
         </div>
 
         {/* locais List */}
-        {locais?.data && locais.data.length > 0 ? (
+        {locaisItems.length > 0 ? (
           <div className="space-y-4 mb-8">
-            {locais.data.map((loc: any) => (
+            {locaisItems.map((loc: any) => (
               <Card key={loc.id} className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                 <CardBody className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -180,7 +257,7 @@ export default function LocaisPage() {
         )}
 
         {/* Pagination */}
-        {locais && locais.pages > 1 && (
+        {totalPages > 1 && (
           <div className="flex justify-center gap-2">
             <Button
               variant="secondary"
@@ -191,13 +268,13 @@ export default function LocaisPage() {
             </Button>
             <div className="flex items-center px-4 py-2">
               <span className="text-gray-600 dark:text-gray-400">
-                Página {page} de {locais.pages}
+                Página {page} de {totalPages}
               </span>
             </div>
             <Button
               variant="secondary"
-              disabled={page === locais.pages}
-              onClick={() => setPage(Math.min(locais.pages, page + 1))}
+              disabled={page === totalPages}
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
             >
               Próxima →
             </Button>
