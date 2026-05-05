@@ -210,9 +210,9 @@ export default function NewLocalPage() {
                   disabled={submitting}
                   icon={<Save size={20} />}
                 >
-                  {submitting ? 'Salvando...' : 'Registrar Item'}
+                  {submitting ? 'Salvando...' : 'Registrar Local'}
                 </Button>
-                <Link href="/items" className="w-full sm:w-auto">
+                <Link href="/locais" className="w-full sm:w-auto">
                   <Button variant="outline" size="lg" fullWidth icon={<X size={20} />}>
                     Cancelar
                   </Button>
