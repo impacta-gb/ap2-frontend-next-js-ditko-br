@@ -22,7 +22,7 @@ export default function NewLocalPage() {
   const redirectTimerRef = useRef<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-    const [submitAlert, setSubmitAlert] = useState<{
+  const [submitAlert, setSubmitAlert] = useState<{
     type: 'success' | 'error';
     title: string;
     message: string;
@@ -101,17 +101,14 @@ export default function NewLocalPage() {
     } finally {
       setSubmitting(false)
     }
+
+  }
   const localOptions =
     mockLocais?.data?.map((local: any) => ({
       value: local.id,
       label: `${local.tipo} - ${local.bairro}`,
     })) || [];
 
-  const responsavelOptions =
-    mockResponsaveis?.data?.map((resp: any) => ({
-      value: resp.id,
-      label: `${resp.nome} (${resp.cargo})`,
-    })) || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -227,4 +224,4 @@ export default function NewLocalPage() {
       </div>
     </div>
   );
-}}
+}
