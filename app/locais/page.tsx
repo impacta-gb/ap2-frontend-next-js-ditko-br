@@ -19,21 +19,27 @@ interface LocalListState {
 
 const LOCAIS_PER_PAGE = 10;
 
+const extractLocalArray = (obj: Record<string, unknown>): Local[] | undefined => {
+  if (Array.isArray(obj.locais)) return obj.locais as Local[];
+  if (Array.isArray(obj.locals)) return obj.locals as Local[];
+  if (Array.isArray(obj.items)) return obj.items as Local[];
+  if (Array.isArray(obj.results)) return obj.results as Local[];
+  if (Array.isArray(obj.data)) return obj.data as Local[];
+
+  if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+    return extractLocalArray(obj.data as Record<string, unknown>);
+  }
+
+  return undefined;
+};
+
 const normalizeLocalArray = (payload: unknown): Local[] => {
   if (Array.isArray(payload)) return payload as Local[];
 
   if (payload && typeof payload === 'object') {
     const obj = payload as Record<string, unknown>;
-
-    if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
-      const dataObj = obj.data as Record<string, unknown>;
-      if (Array.isArray(dataObj.locais)) return dataObj.locais as Local[];
-    }
-
-    if (Array.isArray(obj.data)) return obj.data as Local[];
-    if (Array.isArray(obj.locais)) return obj.locais as Local[];
-    if (Array.isArray(obj.items)) return obj.items as Local[];
-    if (Array.isArray(obj.results)) return obj.results as Local[];
+    const extracted = extractLocalArray(obj);
+    if (Array.isArray(extracted)) return extracted;
   }
 
   return [];
