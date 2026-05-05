@@ -2,16 +2,27 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Card, CardBody, CardHeader, Button, Loading } from '@/src/components';
-import { useMockData } from '@/src/hooks/useMockData';
-import { mockLocais } from '@/src/lib/mockData';
+import { Card, CardBody, CardHeader, Button, Loading, Alert } from '@/src/components';
+import { useFetch } from '@/src/hooks/useApi';
+import { apiClient } from '@/src/lib/api-client';
 import { RotateCcw, Package, User, Calendar, ArrowRight, Plus } from 'lucide-react';
 
 export default function LocaisPage() {
   const [page, setPage] = useState(1);
-  const { data: locais, loading } = useMockData(mockLocais);
+  const { data: locais, loading, error } = useFetch(
+    () => apiClient.getLocais(page, 10),
+    [page]
+  );
 
   if (loading) return <Loading />;
+  if (error)
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <Alert type="error" title="Erro" message={error} />
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 dark:from-slate-950 dark:via-purple-950 dark:to-blue-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
