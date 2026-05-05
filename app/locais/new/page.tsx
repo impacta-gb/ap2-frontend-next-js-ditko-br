@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Input, Textarea, Select, Alert } from '@/src/components';
 import { mockLocais, mockResponsaveis } from '@/src/lib/mockData';
+import { CreateLocalRequest } from '@/src/types';
 import { Plus, Save, X, Package } from 'lucide-react';
+import { apiClient } from '@/src/lib/api-client';
 
 export default function NewLocalPage() {
   const router = useRouter();
+  const alertTimerRef = useRef<number | null>(null);
   const [formData, setFormData] = useState({
     tipo: '',
     descricao: '',
@@ -16,8 +19,15 @@ export default function NewLocalPage() {
     item_id: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const redirectTimerRef = useRef<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [submitAlert, setSubmitAlert] = useState<{
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  } | null>(null);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -29,6 +39,18 @@ export default function NewLocalPage() {
         return newErrors;
       });
     }
+  };
+
+  const showAlert = (alert: { type: 'success' | 'error'; title: string; message: string }) => {
+    setSubmitAlert(alert);
+
+    if (alertTimerRef.current) {
+      window.clearTimeout(alertTimerRef.current);
+    }
+
+    alertTimerRef.current = window.setTimeout(() => {
+      setSubmitAlert(null);
+    }, 3500);
   };
 
   const validateForm = (): boolean => {
@@ -49,17 +71,33 @@ export default function NewLocalPage() {
     if (!validateForm()) return;
 
     setSubmitting(true);
-    // Simular delay de API
-    setTimeout(() => {
-      setSubmitting(false);
-      setSubmitSuccess(true);
-      // Redirecionar após 1.5 segundos
-      setTimeout(() => {
-        router.push('/items');
-      }, 1500);
-    }, 500);
-  };
+    try{
+      const payload: CreateLocalRequest = {
+        tipo: formData.tipo.trim(),
+        descricao: formData.descricao.trim(),
+        bairro: formData.bairro.trim()
+      }
+      await apiClient.createLocal(payload)
 
+      showAlert({
+        type: 'success',
+        title: 'Local registrado',
+        message: 'O cadastro foi concluído com sucesso.',
+      })
+
+      if(redirectTimerRef.current) {
+        window.clearTimeout(redirectTimerRef.current)
+      }
+      redirectTimerRef.current = window.setTimeout(() => {
+        router.push('/locais')
+      }, 2200)
+    } catch{
+      showAlert({
+        type: 'error',
+        title: 'Erro ao salvar',
+        message: 'Não foi possível registrar o responsável neste momento.',
+      });
+    }
   const localOptions =
     mockLocais?.data?.map((local: any) => ({
       value: local.id,
@@ -186,4 +224,4 @@ export default function NewLocalPage() {
       </div>
     </div>
   );
-}
+}}
