@@ -5,11 +5,15 @@ import {
   PatchResponsavelRequest,
   Responsavel,
   UpdateResponsavelRequest,
+  Local,
+  CreateLocalRequest,
+  PatchLocalRequest,
+  UpdateLocalRequest,
 } from "../types";
 
 const API_URLS = {
   ITEM: process.env.NEXT_PUBLIC_API_ITEM_URL || "http://localhost:8001",
-  LOCAL: process.env.NEXT_PUBLIC_API_LOCAL_URL || "http://localhost:8002",
+  LOCAL: "/api/proxy/local",
   RESPONSAVEL: "/api/proxy/responsavel",
   DEVOLUCAO: process.env.NEXT_PUBLIC_API_DEVOLUCAO_URL || "http://localhost:8004",
   RECLAMANTE:
@@ -22,6 +26,10 @@ class ApiClient {
     return `${normalizedBase}/api/v1/responsaveis${path}`;
   }
 
+  private localPath(path = ""): string {
+    const normalizedBase = API_URLS.LOCAL.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/locais${path}`;
+  }
   private extractResponsavel(payload: unknown): Responsavel {
     if (payload && typeof payload === "object") {
       const obj = payload as Record<string, unknown>;
@@ -40,6 +48,26 @@ class ApiClient {
     }
 
     return payload as Responsavel;
+  }
+
+  private extractLocal(payload: unknown): Local {
+    if (payload && typeof payload === "object") {
+      const obj = payload as Record<string, unknown>;
+
+      if (obj.data && typeof obj.data === "object" && !Array.isArray(obj.data)) {
+        return obj.data as Local;
+      }
+
+      if (
+        obj.local &&
+        typeof obj.local === "object" &&
+        !Array.isArray(obj.local)
+      ) {
+        return obj.local as Local;
+      }
+    }
+
+    return payload as Local;
   }
 
   private async request<T>(
@@ -111,19 +139,37 @@ class ApiClient {
   // Local endpoints
   async getLocais(page = 1, limit = 10): Promise<ApiListResponse<any>> {
     return this.request(
-      `${API_URLS.LOCAL}/locais?page=${page}&limit=${limit}`,
+      `${this.localPath("/")}?page=${page}&limit=${limit}`,
       { method: "GET" }
     );
   }
 
   async getLocalById(id: string): Promise<any> {
-    return this.request(`${API_URLS.LOCAL}/locais/${id}`, { method: "GET" });
+    return this.request(this.localPath(`/${id}`), { method: "GET" });
   }
 
-  async createLocal(data: any): Promise<any> {
-    return this.request(`${API_URLS.LOCAL}/locais`, {
+  async createLocal(data: CreateLocalRequest): Promise<Local> {
+    return this.request(this.localPath('/'), {
       method: "POST",
       body: JSON.stringify(data),
+    });
+  }
+
+  async patchLocal(
+    id: string,
+    data: PatchLocalRequest
+  ): Promise<Local> {
+    return this.request(this.localPath(`/${id}`), {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+
+
+  async deleteLocal(id: string): Promise<void> {
+    return this.request(this.localPath(`/${id}`), {
+      method: "DELETE",
     });
   }
 

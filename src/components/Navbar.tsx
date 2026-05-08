@@ -15,6 +15,7 @@ export const Navbar = () => {
     { href: '/items/new', label: 'Registrar', icon: Plus },
     { href: '/devolucoes', label: 'Devoluções', icon: RotateCcw },
     { href: '/responsaveis', label: 'Responsáveis', icon: Users },
+    { href: '/locais', label: 'locaís', icon: Plus}
   ];
 
   return (

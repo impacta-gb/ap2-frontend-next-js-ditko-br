@@ -92,6 +92,25 @@ export interface CreateItemRequest {
   responsavel_id: string;
 }
 
+export interface CreateLocalRequest {
+  tipo: string;
+  bairro: string;
+  descricao: string;
+}
+
+export interface UpdateLocalRequest {
+  tipo: string;
+  bairro: string;
+  descricao: string;
+}
+
+export interface PatchLocalRequest{
+  tipo: string;
+  bairro: string;
+  descricao: string;
+}
+
+
 export interface CreateDevolucaoRequest {
   item_id: string;
   reclamante_id: string;
