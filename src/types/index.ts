@@ -104,13 +104,31 @@ export interface UpdateLocalRequest {
   descricao: string;
 }
 
-export interface PatchLocalRequest{
-  tipo: string;
-  bairro: string;
-  descricao: string;
+export interface PatchLocalRequest {
+  tipo?: string;
+  bairro?: string;
+  descricao?: string;
 }
 
+export interface UpdateItemRequest {
+  nome?: string;
+  categoria?: string;
+  data_encontro?: string;
+  descricao?: string;
+  local_id?: string;
+  responsavel_id?: string;
+  status?: ItemStatus;
+}
 
+export interface PatchItemRequest {
+  nome?: string;
+  categoria?: string;
+  data_encontro?: string;
+  descricao?: string;
+  local_id?: string;
+  responsavel_id?: string;
+  status?: ItemStatus;
+}
 export interface CreateDevolucaoRequest {
   item_id: string;
   reclamante_id: string;
