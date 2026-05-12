@@ -7,7 +7,7 @@ import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
 import { RotateCcw, Package, User, Calendar, ArrowRight, Plus } from 'lucide-react';
 import { Local, Responsavel} from '@/src/types';
-
+import { Users, Briefcase, Phone, Search, UserCheck, UserX, Eye, Pencil, Trash2 } from 'lucide-react';
 
 type FiltroAtivo = 'todos' | 'ativos' | 'inativos';
 
@@ -76,9 +76,12 @@ const normalizePages = (payload: unknown, total: number): number => {
 };
 
 
+
 export default function LocaisPage() {
   const [page, setPage] = useState(1);
-  const { data: locais, loading, error } = useFetch<LocalListState>(
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; title: string; message: string } | null>(null);
+  const { data: locais, loading, error, refetch } = useFetch<LocalListState>(
     async () => {
       const response = await apiClient.getLocais(page, LOCAIS_PER_PAGE);
       const items = normalizeLocalArray(response);
@@ -107,6 +110,32 @@ export default function LocaisPage() {
         </div>
       </div>
     );
+
+  const handleDelete = async (resp: Responsavel) => {
+    const confirmou = window.confirm(`Deseja realmente excluir o responsável ${resp.nome}?`);
+    if (!confirmou) return;
+
+    try {
+      setActionLoadingId(resp.id);
+      await apiClient.deleteResponsavel(resp.id);
+      setAlert({
+        type: 'success',
+        title: 'Responsável excluído',
+        message: 'O registro foi removido com sucesso.',
+      });
+      refetch();
+    } catch {
+      setAlert({
+        type: 'error',
+        title: 'Erro ao excluir',
+        message: 'Não foi possível excluir o responsável.',
+      });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 dark:from-slate-950 dark:via-purple-950 dark:to-blue-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -147,24 +176,6 @@ export default function LocaisPage() {
               <Card key={loc.id} className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                 <CardBody className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Item */}
-                    <div className="flex gap-3">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
-                        <Package size={20} className="text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 font-semibold">
-                          Item
-                        </p>
-                        <p className="font-bold text-gray-900 dark:text-white">
-                          {loc.item?.nome || 'Item não encontrado'}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-500">
-                          {loc.item?.categoria}
-                        </p>
-                      </div>
-                    </div>
-
 
                     {/* Bairro */}
                     <div className="flex gap-3">
@@ -212,14 +223,31 @@ export default function LocaisPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-end">
-                      <Link href={`/items/${loc.item_id}`} className="w-full group">
-                        <Button variant="outline" size="sm" fullWidth className="group-hover:border-blue-600 group-hover:text-blue-600">
-                          Ver Item
-                          <ArrowRight size={16} />
-                        </Button>
-                      </Link>
-                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <Link href={`/responsaveis/${loc.id}`}>
+                      <Button variant="outline" size="sm" fullWidth icon={<Eye size={16} />}>
+                        Ver
+                      </Button>
+                    </Link>
+                    <Link href={`/responsaveis/${loc.id}/edit`}>
+                      <Button variant="secondary" size="sm" fullWidth icon={<Pencil size={16} />}>
+                        Editar
+                      </Button>
+                    </Link>
+                   
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      fullWidth
+                      loading={actionLoadingId === loc.id}
+                      onClick={() => handleDelete(loc)}
+                      icon={<Trash2 size={16} />}
+                    >
+                      Excluir
+                    </Button>
+                  </div>
+
                   </div>
 
                   
