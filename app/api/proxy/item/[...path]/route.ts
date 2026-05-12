@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 const TARGET_BASE =
   process.env.API_ITEM_URL ||
   process.env.NEXT_PUBLIC_API_ITEM_URL ||
-  'http://localhost:8001';
+  'http://localhost:5000';
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
