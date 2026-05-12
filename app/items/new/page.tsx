@@ -73,17 +73,54 @@ export default function NewItemPage() {
     }
   };
 
-  const localOptions =
-    locais?.data?.map((local: any) => ({
-      value: local.id,
-      label: `${local.tipo} - ${local.bairro}`,
-    })) || [];
+  // Função auxiliar para extrair array de locais
+  const extractLocaisArray = (payload: any): any[] => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && typeof payload === 'object') {
+      if (Array.isArray(payload.data)) return payload.data;
+      if (Array.isArray(payload.items)) return payload.items;
+      if (Array.isArray(payload.locais)) return payload.locais;
+    }
+    return [];
+  };
 
-  const responsavelOptions =
-    responsaveis?.data?.map((resp: any) => ({
+  // Função auxiliar para extrair array de responsáveis
+  const extractResponsaveisArray = (payload: any): any[] => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && typeof payload === 'object') {
+      const obj = payload as Record<string, unknown>;
+      
+      // Verificar estrutura aninhada
+      if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+        const dataObj = obj.data as Record<string, unknown>;
+        if (Array.isArray(dataObj.responsaveis)) return dataObj.responsaveis as any[];
+      }
+      
+      if (Array.isArray(obj.data)) return obj.data;
+      if (Array.isArray(obj.items)) return obj.items;
+      if (Array.isArray(obj.responsaveis)) return obj.responsaveis;
+    }
+    return [];
+  };
+
+  const locaisArray = extractLocaisArray(locais);
+  const responsaveisArray = extractResponsaveisArray(responsaveis);
+
+  const localOptions = [
+    { value: '', label: 'Selecione um local' },
+    ...locaisArray.map((local: any) => ({
+      value: local.id,
+      label: local.descricao,
+    })),
+  ];
+
+  const responsavelOptions = [
+    { value: '', label: 'Selecione um responsável' },
+    ...responsaveisArray.map((resp: any) => ({
       value: resp.id,
-      label: `${resp.nome} (${resp.cargo})`,
-    })) || [];
+      label: `${resp.nome} - ${resp.cargo}`,
+    })),
+  ];
 
   if (loadingLocais || loadingResponsaveis) {
     return <Loading />;
