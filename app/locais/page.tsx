@@ -111,16 +111,16 @@ export default function LocaisPage() {
       </div>
     );
 
-  const handleDelete = async (resp: Responsavel) => {
-    const confirmou = window.confirm(`Deseja realmente excluir o responsável ${resp.nome}?`);
+  const handleDelete = async (loc: Local) => {
+    const confirmou = window.confirm(`Deseja realmente excluir o local ${loc.bairro}?`);
     if (!confirmou) return;
 
     try {
-      setActionLoadingId(resp.id);
-      await apiClient.deleteResponsavel(resp.id);
+      setActionLoadingId(loc.id);
+      await apiClient.deleteLocal(loc.id);
       setAlert({
         type: 'success',
-        title: 'Responsável excluído',
+        title: 'Local excluído',
         message: 'O registro foi removido com sucesso.',
       });
       refetch();
@@ -225,12 +225,12 @@ export default function LocaisPage() {
                     {/* Actions */}
                     
                     <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <Link href={`/responsaveis/${loc.id}`}>
+                    <Link href={`/locais/${loc.id}`}>
                       <Button variant="outline" size="sm" fullWidth icon={<Eye size={16} />}>
                         Ver
                       </Button>
                     </Link>
-                    <Link href={`/responsaveis/${loc.id}/edit`}>
+                    <Link href={`/locais/${loc.id}/edit`}>
                       <Button variant="secondary" size="sm" fullWidth icon={<Pencil size={16} />}>
                         Editar
                       </Button>
