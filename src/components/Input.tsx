@@ -151,7 +151,6 @@ export const Select = ({ label, error, options, id, ...props }: SelectProps) => 
           }`}
           {...props}
         >
-          <option value="">Selecione uma opção</option>
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
