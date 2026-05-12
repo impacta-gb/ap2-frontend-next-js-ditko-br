@@ -144,15 +144,17 @@ class ApiClient {
     );
   }
 
-  async getLocalById(id: string): Promise<any> {
-    return this.request(this.localPath(`/${id}`), { method: "GET" });
+  async getLocalById(id: string): Promise<Local> {
+    const response = await this.request(this.localPath(`/${id}`), { method: "GET" });
+    return this.extractLocal(response);
   }
 
   async createLocal(data: CreateLocalRequest): Promise<Local> {
-    return this.request(this.localPath('/'), {
+    const response = await this.request(this.localPath('/'), {
       method: "POST",
       body: JSON.stringify(data),
     });
+    return this.extractLocal(response);
   }
 
   async patchLocal(

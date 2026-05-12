@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Badge, Loading, Alert } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
-import { formatDate, formatDateTime, translateStatus } from '@/src/lib/utils';
+import { formatDate, formatDateTime } from '@/src/lib/utils';
 
 export default function LocalDetailPage() {
   const params = useParams();
@@ -19,7 +19,7 @@ export default function LocalDetailPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Alert type="error" title="Erro" message={error} />
-          <Link href="/local" className="mt-4 block">
+          <Link href="/locais" className="mt-4 block">
             <Button variant="secondary">← Voltar para locais</Button>
           </Link>
         </div>
@@ -57,14 +57,8 @@ export default function LocalDetailPage() {
                 <p className="text-gray-600 dark:text-gray-400">{local.bairro}</p>
               </div>
               <Badge
-                label={translateStatus(local.tipo)}
-                variant={
-                  local.status === 'disponível'
-                    ? 'success'
-                    : local.status === 'devolvido'
-                    ? 'info'
-                    : 'warning'
-                }
+                label={typeof local.tipo === 'string' ? local.tipo : 'Local'}
+                variant="info"
               />
             </div>
           </CardHeader>

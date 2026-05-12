@@ -5,11 +5,8 @@ import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Loading, Alert } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
-import { RotateCcw, Package, User, Calendar, ArrowRight, Plus } from 'lucide-react';
-import { Local, Responsavel} from '@/src/types';
-import { Users, Briefcase, Phone, Search, UserCheck, UserX, Eye, Pencil, Trash2 } from 'lucide-react';
-
-type FiltroAtivo = 'todos' | 'ativos' | 'inativos';
+import { RotateCcw, Package, Calendar, ArrowRight, Plus, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Local } from '@/src/types';
 
 interface LocalListState {
   items: Local[];
