@@ -1,16 +1,36 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Badge, Loading, Alert } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
 import { formatDate, formatDateTime } from '@/src/lib/utils';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export default function LocalDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
+  const [actionLoading, setActionLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const { data: local, loading, error } = useFetch(() => apiClient.getLocalById(id), [id]);
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm('Deseja realmente excluir este local?');
+    if (!confirmed) return;
+
+    try {
+      setActionLoading(true);
+      await apiClient.deleteLocal(id);
+      router.push('/locais');
+    } catch (err) {
+      setDeleteError('Não foi possível excluir o local.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   if (loading) return <Loading />;
 
@@ -49,19 +69,36 @@ export default function LocalDetailPage() {
         {/* Item Details */}
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-start gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   {local.tipo}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">{local.bairro}</p>
               </div>
-              <Badge
-                label={typeof local.tipo === 'string' ? local.tipo : 'Local'}
-                variant="info"
-              />
+              <div className="flex gap-3 flex-wrap">
+                <Link href={`/locais/${id}/edit`}>
+                  <Button variant="secondary" icon={<Pencil size={16} />}>
+                    Editar
+                  </Button>
+                </Link>
+                <Button
+                  variant="danger"
+                  icon={<Trash2 size={16} />}
+                  onClick={handleDelete}
+                  loading={actionLoading}
+                >
+                  Excluir
+                </Button>
+              </div>
             </div>
           </CardHeader>
+
+          {deleteError && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/30 rounded-xl border border-red-200 dark:border-red-700 mb-4">
+              <p className="text-sm text-red-700 dark:text-red-200">{deleteError}</p>
+            </div>
+          )}
 
           <CardBody className="space-y-6">
             {/* Description */}
