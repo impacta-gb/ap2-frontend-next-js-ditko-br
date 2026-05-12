@@ -124,10 +124,11 @@ class ApiClient {
 
       try {
         const errorData = await response.json();
-        error.message = errorData.message || error.message;
-        error.details = errorData.details;
-      } catch {
-        // Continue with default error message
+        console.error('Resposta de erro da API:', errorData);
+        error.message = errorData.message || errorData.msg || JSON.stringify(errorData) || error.message;
+        error.details = errorData.details || errorData.errors;
+      } catch (parseError) {
+        console.error('Erro ao fazer parse da resposta de erro:', parseError);
       }
 
       throw error;
