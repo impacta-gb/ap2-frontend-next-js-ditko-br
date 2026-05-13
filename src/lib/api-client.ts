@@ -16,7 +16,7 @@ const API_URLS = {
   LOCAL: "/api/proxy/local",
   RESPONSAVEL: "/api/proxy/responsavel",
   DEVOLUCAO: process.env.NEXT_PUBLIC_API_DEVOLUCAO_URL || "http://localhost:8004",
-  RECLAMANTE: process.env.NEXT_PUBLIC_API_RECLAMANTE_URL || "http://localhost:8005",
+  RECLAMANTE:"/api/proxy/reclamante",
 };
 
 class ApiClient {
