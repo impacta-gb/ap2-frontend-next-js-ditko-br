@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Input, Alert } from '@/src/components';
 import { apiClient } from '@/src/lib/api-client';
 import { CreateReclamanteRequest } from '@/src/types';
+import { ApiErrorHandler } from '@/src/lib/utils';
 import { Plus, Save, X, User, FileText, Phone } from 'lucide-react';
 
 export default function NewReclamantePage() {
@@ -113,11 +114,11 @@ export default function NewReclamantePage() {
       redirectTimerRef.current = window.setTimeout(() => {
         router.push('/reclamantes');
       }, 2200);
-    } catch {
+    } catch (err) {
       showAlert({
         type: 'error',
         title: 'Erro ao salvar',
-        message: 'Não foi possível registrar o reclamante neste momento.',
+        message: ApiErrorHandler.handle(err),
       });
     } finally {
       setSubmitting(false);

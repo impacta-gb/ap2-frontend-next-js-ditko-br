@@ -157,6 +157,13 @@ export default function ReclamantesPage() {
                     <p className="font-semibold text-gray-900 dark:text-white">{new Date(reclamante.criado_em).toLocaleString()}</p>
                   </div>
                 </CardBody>
+                <div className="flex justify-end px-6 pb-5">
+                  <Link href={`/reclamantes/${reclamante.id}`}>
+                    <Button variant="secondary" size="sm">
+                      Ver detalhes
+                    </Button>
+                  </Link>
+                </div>
               </Card>
             ))}
           </div>

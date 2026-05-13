@@ -103,7 +103,16 @@ class ApiClient {
       throw error;
     }
 
-    return response.json();
+    const text = await response.text();
+    if (!text) {
+      return undefined as unknown as T;
+    }
+
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      return text as unknown as T;
+    }
   }
 
   // Item endpoints
