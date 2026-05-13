@@ -30,6 +30,11 @@ class ApiClient {
     const normalizedBase = API_URLS.LOCAL.replace(/\/$/, "");
     return `${normalizedBase}/api/v1/locais${path}`;
   }
+
+  private reclamantePath(path = ""): string {
+    const normalizedBase = API_URLS.LOCAL.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/reclamantes${path}`;
+  }
   private extractResponsavel(payload: unknown): Responsavel {
     if (payload && typeof payload === "object") {
       const obj = payload as Record<string, unknown>;
@@ -267,19 +272,20 @@ class ApiClient {
   // Reclamante endpoints
   async getReclamantes(page = 1, limit = 10): Promise<ApiListResponse<any>> {
     return this.request(
-      `${API_URLS.RECLAMANTE}/reclamantes?page=${page}&limit=${limit}`,
+      `${API_URLS.RECLAMANTE}/?page=${page}&limit=${limit}`,
       { method: "GET" }
     );
   }
 
   async getReclamanteById(id: string): Promise<any> {
-    return this.request(`${API_URLS.RECLAMANTE}/reclamantes/${id}`, {
+    return this.request(this.reclamantePath(`/${id}`), {
       method: "GET",
     });
   }
+  //this.request(this.localPath(`/${id}`), { method: "GET" })
 
   async createReclamante(data: any): Promise<any> {
-    return this.request(`${API_URLS.RECLAMANTE}/reclamantes`, {
+    return this.request(`${API_URLS.RECLAMANTE}`, {
       method: "POST",
       body: JSON.stringify(data),
     });
