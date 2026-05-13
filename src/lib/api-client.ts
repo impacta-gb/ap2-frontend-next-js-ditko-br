@@ -16,8 +16,7 @@ const API_URLS = {
   LOCAL: "/api/proxy/local",
   RESPONSAVEL: "/api/proxy/responsavel",
   DEVOLUCAO: process.env.NEXT_PUBLIC_API_DEVOLUCAO_URL || "http://localhost:8004",
-  RECLAMANTE:
-    "/api/proxy/reclamantes",
+  RECLAMANTE: process.env.NEXT_PUBLIC_API_RECLAMANTE_URL || "http://localhost:8005",
 };
 
 class ApiClient {
@@ -32,8 +31,8 @@ class ApiClient {
   }
 
   private reclamantePath(path = ""): string {
-    const normalizedBase = API_URLS.LOCAL.replace(/\/$/, "");
-    return `${normalizedBase}/api/v1/reclamantes${path}`;
+    const normalizedBase = API_URLS.RECLAMANTE.replace(/\/$/, "");
+    return `${normalizedBase}/reclamantes${path}`;
   }
   private extractResponsavel(payload: unknown): Responsavel {
     if (payload && typeof payload === "object") {
@@ -272,7 +271,7 @@ class ApiClient {
   // Reclamante endpoints
   async getReclamantes(page = 1, limit = 10): Promise<ApiListResponse<any>> {
     return this.request(
-      `${API_URLS.RECLAMANTE}/?page=${page}&limit=${limit}`,
+      `${API_URLS.RECLAMANTE}/reclamantes?page=${page}&limit=${limit}`,
       { method: "GET" }
     );
   }
@@ -282,10 +281,9 @@ class ApiClient {
       method: "GET",
     });
   }
-  //this.request(this.localPath(`/${id}`), { method: "GET" })
 
   async createReclamante(data: any): Promise<any> {
-    return this.request(`${API_URLS.RECLAMANTE}`, {
+    return this.request(this.reclamantePath(""), {
       method: "POST",
       body: JSON.stringify(data),
     });
