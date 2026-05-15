@@ -33,7 +33,8 @@ class ApiClient {
 
   private reclamantePath(path = ""): string {
     const normalizedBase = API_URLS.RECLAMANTE.replace(/\/$/, "");
-    return `${normalizedBase}/api/v1/reclamantes${path}`;
+    const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
+    return `${normalizedBase}/api/v1/reclamantes${normalizedPath}`;
   }
   private extractResponsavel(payload: unknown): Responsavel {
     if (payload && typeof payload === "object") {
@@ -81,6 +82,7 @@ class ApiClient {
   ): Promise<T> {
     const defaultHeaders = {
       "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     const response = await fetch(url, {
@@ -284,7 +286,7 @@ class ApiClient {
   }
 
   async createReclamante(data: any): Promise<any> {
-    return this.request(this.reclamantePath(''), {
+    return this.request(this.reclamantePath('/'), {
       method: "POST",
       body: JSON.stringify(data),
     });

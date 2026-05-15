@@ -96,8 +96,8 @@ export default function NewReclamantePage() {
     try {
       const payload: CreateReclamanteRequest = {
         nome: formData.nome.trim(),
-        documento: formData.documento.trim(),
-        telefone: formData.telefone.trim(),
+        documento: formData.documento.replace(/\D/g, '').trim(),
+        telefone: formData.telefone.replace(/\D/g, '').trim(),
       };
 
       await apiClient.createReclamante(payload);
