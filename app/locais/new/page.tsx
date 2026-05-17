@@ -3,8 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardBody, CardHeader, Button, Input, Textarea, Select, Alert } from '@/src/components';
-import { mockLocais, mockResponsaveis } from '@/src/lib/mockData';
+import { Card, CardBody, CardHeader, Button, Input, Textarea, Alert } from '@/src/components';
 import { CreateLocalRequest } from '@/src/types';
 import { Plus, Save, X, Package } from 'lucide-react';
 import { apiClient } from '@/src/lib/api-client';
