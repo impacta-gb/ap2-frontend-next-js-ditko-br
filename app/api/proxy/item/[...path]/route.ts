@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
 
 const TARGET_BASE =
-  process.env.API_RESPONSAVEL_URL ||
-  process.env.NEXT_PUBLIC_API_RESPONSAVEL_URL ||
-  'http://localhost:5002';
+  process.env.API_ITEM_URL ||
+  process.env.NEXT_PUBLIC_API_ITEM_URL ||
+  'http://localhost:5000';
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
@@ -104,14 +104,6 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<{ path: string[] }> }
-) {
-  const { path } = await context.params;
-  return proxy(request, path || []);
-}
-
-export async function OPTIONS(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
 ) {

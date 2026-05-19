@@ -1,9 +1,13 @@
 import {
   ApiError,
   ApiListResponse,
+  CreateItemRequest,
   CreateResponsavelRequest,
+  Item,
+  PatchItemRequest,
   PatchResponsavelRequest,
   Responsavel,
+  UpdateItemRequest,
   UpdateResponsavelRequest,
   Local,
   CreateLocalRequest,
@@ -12,7 +16,7 @@ import {
 } from "../types";
 
 const API_URLS = {
-  ITEM: process.env.NEXT_PUBLIC_API_ITEM_URL || "http://localhost:8001",
+  ITEM: "/api/proxy/item",
   LOCAL: "/api/proxy/local",
   RESPONSAVEL: "/api/proxy/responsavel",
   DEVOLUCAO: process.env.NEXT_PUBLIC_API_DEVOLUCAO_URL || "http://localhost:8004",
@@ -21,6 +25,11 @@ const API_URLS = {
 };
 
 class ApiClient {
+  private itemPath(path = ""): string {
+    const normalizedBase = API_URLS.ITEM.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/items${path}`;
+  }
+
   private responsavelPath(path = ""): string {
     const normalizedBase = API_URLS.RESPONSAVEL.replace(/\/$/, "");
     return `${normalizedBase}/api/v1/responsaveis${path}`;
@@ -101,10 +110,11 @@ class ApiClient {
 
       try {
         const errorData = await response.json();
-        error.message = errorData.message || error.message;
-        error.details = errorData.details;
-      } catch {
-        // Continue with default error message
+        console.error('Resposta de erro da API:', errorData);
+        error.message = errorData.message || errorData.msg || JSON.stringify(errorData) || error.message;
+        error.details = errorData.details || errorData.errors;
+      } catch (parseError) {
+        console.error('Erro ao fazer parse da resposta de erro:', parseError);
       }
 
       throw error;
@@ -123,33 +133,58 @@ class ApiClient {
   }
 
   // Item endpoints
-  async getItems(page = 1, limit = 10): Promise<ApiListResponse<any>> {
+  async getItems(page = 1, limit = 10): Promise<ApiListResponse<Item>> {
     return this.request(
-      `${API_URLS.ITEM}/items?page=${page}&limit=${limit}`,
+      `${this.itemPath("/")}?page=${page}&limit=${limit}`,
       { method: "GET" }
     );
   }
 
-  async getItemById(id: string): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, { method: "GET" });
+  async getItemById(id: string): Promise<Item> {
+    const response = await this.request<unknown>(this.itemPath(`/${id}`), {
+      method: "GET",
+    });
+    return this.extractItem(response);
   }
 
-  async createItem(data: any): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items`, {
+  async getItemsByStatus(status: string): Promise<Item[]> {
+    return this.request(this.itemPath(`/status/${status}`), {
+      method: "GET",
+    });
+  }
+
+  async createItem(data: CreateItemRequest): Promise<Item> {
+    return this.request(this.itemPath("/"), {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async updateItem(id: string, data: any): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, {
+  async updateItem(id: string, data: UpdateItemRequest): Promise<Item> {
+    return this.request(this.itemPath(`/${id}`), {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
+  async patchItem(id: string, data: PatchItemRequest): Promise<Item> {
+    return this.request(this.itemPath(`/${id}`), {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateItemStatus(id: string, status: string): Promise<Item> {
+    return this.request(this.itemPath(`/${id}/status`), {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  }
+
   async deleteItem(id: string): Promise<void> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, { method: "DELETE" });
+    return this.request(this.itemPath(`/${id}`), {
+      method: "DELETE",
+    });
   }
 
   // Local endpoints
@@ -160,15 +195,17 @@ class ApiClient {
     );
   }
 
-  async getLocalById(id: string): Promise<any> {
-    return this.request(this.localPath(`/${id}`), { method: "GET" });
+  async getLocalById(id: string): Promise<Local> {
+    const response = await this.request(this.localPath(`/${id}`), { method: "GET" });
+    return this.extractLocal(response);
   }
 
   async createLocal(data: CreateLocalRequest): Promise<Local> {
-    return this.request(this.localPath('/'), {
+    const response = await this.request(this.localPath('/'), {
       method: "POST",
       body: JSON.stringify(data),
     });
+    return this.extractLocal(response);
   }
 
   async patchLocal(

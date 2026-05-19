@@ -95,6 +95,7 @@ export default function NewResponsavelPage() {
         telefone: formData.telefone.trim(),
       };
 
+      console.log('Enviando payload:', payload);
       await apiClient.createResponsavel(payload);
 
       showAlert({
@@ -109,11 +110,14 @@ export default function NewResponsavelPage() {
       redirectTimerRef.current = window.setTimeout(() => {
         router.push('/responsaveis');
       }, 2200);
-    } catch {
+    } catch (error: any) {
+      console.error('Erro ao criar responsável:', error);
+      console.error('Erro completo:', JSON.stringify(error, null, 2));
+      const errorMsg = error?.message || error?.details || JSON.stringify(error);
       showAlert({
         type: 'error',
         title: 'Erro ao salvar',
-        message: 'Não foi possível registrar o responsável neste momento.',
+        message: errorMsg,
       });
     } finally {
       setSubmitting(false);

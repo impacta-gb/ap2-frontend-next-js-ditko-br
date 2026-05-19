@@ -2,22 +2,34 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Card, CardBody, CardHeader, Button, Badge, Loading } from '@/src/components';
-import { useMockData } from '@/src/hooks/useMockData';
-import { mockItems } from '@/src/lib/mockData';
+import { Card, CardBody, CardHeader, Button, Badge, Loading, Alert } from '@/src/components';
+import { useFetch } from '@/src/hooks/useApi';
+import { apiClient } from '@/src/lib/api-client';
 import { translateStatus } from '@/src/lib/utils';
 import { Plus, MapPin, Calendar, Tag, Search } from 'lucide-react';
 
 export default function ItemsPage() {
   const [page, setPage] = useState(1);
-  const { data: items, loading } = useMockData(mockItems);
+  const { data: items, loading, error, refetch } = useFetch(() => apiClient.getItems(page, 10), [page]);
 
   if (loading) return <Loading />;
 
+  if (error)
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
+        <div className="max-w-7xl mx-auto">
+          <Alert type="error" title="Erro ao carregar itens" message={error} />
+          <div className="mt-4">
+            <Button onClick={() => refetch()} variant="primary">
+              Tentar novamente
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+
   const itemsPerPage = 10;
-  const startIndex = (page - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedItems = items?.data.slice(startIndex, endIndex) || [];
+  const paginatedItems = items?.data || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -142,11 +154,11 @@ export default function ItemsPage() {
               Anterior
             </Button>
             <span className="text-gray-600 dark:text-gray-400 font-semibold">
-              Página {page}
+              Página {page} de {items.pages}
             </span>
             <Button
               variant="outline"
-              disabled={page * itemsPerPage >= items.total}
+              disabled={page >= items.pages}
               onClick={() => setPage(page + 1)}
             >
               Próxima

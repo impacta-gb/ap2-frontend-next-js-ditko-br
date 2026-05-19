@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardBody, CardHeader, Button, Input, Textarea, Select, Alert } from '@/src/components';
-import { mockLocais, mockResponsaveis } from '@/src/lib/mockData';
+import { Card, CardBody, CardHeader, Button, Input, Textarea, Select, Alert, Loading } from '@/src/components';
+import { useFetch } from '@/src/hooks/useApi';
+import { apiClient } from '@/src/lib/api-client';
 import { Plus, Save, X, Package } from 'lucide-react';
 
 export default function NewItemPage() {
   const router = useRouter();
+  const { data: locais, loading: loadingLocais } = useFetch(() => apiClient.getLocais(1, 100));
+  const { data: responsaveis, loading: loadingResponsaveis } = useFetch(() => apiClient.getResponsaveis(1, 100));
+  
   const [formData, setFormData] = useState({
     nome: '',
     categoria: '',
@@ -20,6 +24,7 @@ export default function NewItemPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -53,28 +58,73 @@ export default function NewItemPage() {
     if (!validateForm()) return;
 
     setSubmitting(true);
-    // Simular delay de API
-    setTimeout(() => {
-      setSubmitting(false);
+    setSubmitError(null);
+    
+    try {
+      await apiClient.createItem(formData);
       setSubmitSuccess(true);
       // Redirecionar após 1.5 segundos
       setTimeout(() => {
         router.push('/items');
       }, 1500);
-    }, 500);
+    } catch (error: any) {
+      setSubmitError(error.message || 'Erro ao registrar item');
+      setSubmitting(false);
+    }
   };
 
-  const localOptions =
-    mockLocais?.data?.map((local: any) => ({
-      value: local.id,
-      label: `${local.tipo} - ${local.bairro}`,
-    })) || [];
+  // Função auxiliar para extrair array de locais
+  const extractLocaisArray = (payload: any): any[] => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && typeof payload === 'object') {
+      if (Array.isArray(payload.data)) return payload.data;
+      if (Array.isArray(payload.items)) return payload.items;
+      if (Array.isArray(payload.locais)) return payload.locais;
+    }
+    return [];
+  };
 
-  const responsavelOptions =
-    mockResponsaveis?.data?.map((resp: any) => ({
+  // Função auxiliar para extrair array de responsáveis
+  const extractResponsaveisArray = (payload: any): any[] => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && typeof payload === 'object') {
+      const obj = payload as Record<string, unknown>;
+      
+      // Verificar estrutura aninhada
+      if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+        const dataObj = obj.data as Record<string, unknown>;
+        if (Array.isArray(dataObj.responsaveis)) return dataObj.responsaveis as any[];
+      }
+      
+      if (Array.isArray(obj.data)) return obj.data;
+      if (Array.isArray(obj.items)) return obj.items;
+      if (Array.isArray(obj.responsaveis)) return obj.responsaveis;
+    }
+    return [];
+  };
+
+  const locaisArray = extractLocaisArray(locais);
+  const responsaveisArray = extractResponsaveisArray(responsaveis);
+
+  const localOptions = [
+    { value: '', label: 'Selecione um local' },
+    ...locaisArray.map((local: any) => ({
+      value: local.id,
+      label: local.descricao,
+    })),
+  ];
+
+  const responsavelOptions = [
+    { value: '', label: 'Selecione um responsável' },
+    ...responsaveisArray.map((resp: any) => ({
       value: resp.id,
-      label: `${resp.nome} (${resp.cargo})`,
-    })) || [];
+      label: `${resp.nome} - ${resp.cargo}`,
+    })),
+  ];
+
+  if (loadingLocais || loadingResponsaveis) {
+    return <Loading />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -103,6 +153,16 @@ export default function NewItemPage() {
         </div>
 
         {/* Error/Success Alert */}
+        {submitError && (
+          <Alert
+            type="error"
+            title="Erro ao registrar"
+            message={submitError}
+            closeable={true}
+            animated
+          />
+        )}
+
         {submitSuccess && (
           <Alert
             type="success"
