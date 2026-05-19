@@ -1,17 +1,23 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Input, Textarea, Select, Alert, Loading } from '@/src/components';
-import { mockReclamantes, mockItems } from '@/src/lib/mockData';
-import { RotateCcw, Save, X } from 'lucide-react';
+import { useFetch } from '@/src/hooks/useApi';
+import { apiClient } from '@/src/lib/api-client';
+import { RotateCcw, Save, X, Calendar } from 'lucide-react';
 
 function NewDevolutionPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const itemId = searchParams.get('item_id');
+  const alertTimerRef = useRef<number | null>(null);
+  const redirectTimerRef = useRef<number | null>(null);
+
+  const { data: items, loading: loadingItems } = useFetch(() => apiClient.getItems(1, 100));
+  const { data: reclamantes, loading: loadingReclamantes } = useFetch(() => apiClient.getReclamantes(0, 100));
 
   const [formData, setFormData] = useState({
     item_id: itemId || '',
@@ -23,6 +29,34 @@ function NewDevolutionPageContent() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (alertTimerRef.current) {
+        window.clearTimeout(alertTimerRef.current);
+      }
+      if (redirectTimerRef.current) {
+        window.clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, []);
+
+  const showSuccess = () => {
+    setSubmitSuccess(true);
+    if (alertTimerRef.current) {
+      window.clearTimeout(alertTimerRef.current);
+    }
+    alertTimerRef.current = window.setTimeout(() => setSubmitSuccess(false), 3500);
+  };
+
+  const showError = (message: string) => {
+    setSubmitError(message);
+    if (alertTimerRef.current) {
+      window.clearTimeout(alertTimerRef.current);
+    }
+    alertTimerRef.current = window.setTimeout(() => setSubmitError(null), 3500);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -53,30 +87,101 @@ function NewDevolutionPageContent() {
     if (!validateForm()) return;
 
     setSubmitting(true);
-    // Simular delay de API
-    setTimeout(() => {
+    setSubmitError(null);
+    try {
+      await apiClient.createDevolucao(formData);
+      
+      showSuccess();
+      if (redirectTimerRef.current) {
+        window.clearTimeout(redirectTimerRef.current);
+      }
+      redirectTimerRef.current = window.setTimeout(() => router.push('/devolucoes'), 2200);
+    } catch (err: any) {
+      const errorMsg = err.message || 'Erro ao criar devolução. Tente novamente.';
+      showError(errorMsg);
+      console.error('Erro ao criar devolução', err);
       setSubmitting(false);
-      setSubmitSuccess(true);
-      // Redirecionar após 1.5 segundos
-      setTimeout(() => {
-        router.push('/devolucoes');
-      }, 1500);
-    }, 500);
+    }
   };
 
-  const reclamanteOptions =
-    mockReclamantes?.data?.map((rec: any) => ({
-      value: rec.id,
-      label: `${rec.nome} (${rec.documento})`,
-    })) || [];
+  // Função auxiliar para extrair array de items
+  const extractItemsArray = (payload: any): any[] => {
+    if (Array.isArray(payload)) return payload;
 
-  const itemOptions =
-    mockItems?.data
-      ?.filter((item: any) => item.status === 'disponível')
+    const extract = (obj: Record<string, unknown>): any[] | undefined => {
+      if (Array.isArray(obj.items)) return obj.items as any[];
+      if (Array.isArray(obj.data)) return obj.data as any[];
+      if (Array.isArray(obj.results)) return obj.results as any[];
+
+      if (obj.results && typeof obj.results === 'object' && !Array.isArray(obj.results)) {
+        const resultsObj = obj.results as Record<string, unknown>;
+        if (Array.isArray(resultsObj.data)) return resultsObj.data as any[];
+      }
+
+      if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+        return extract(obj.data as Record<string, unknown>);
+      }
+
+      return undefined;
+    };
+
+    if (payload && typeof payload === 'object') {
+      const extracted = extract(payload as Record<string, unknown>);
+      if (Array.isArray(extracted)) return extracted;
+    }
+
+    return [];
+  };
+
+  // Função auxiliar para extrair array de reclamantes
+  const extractReclamantesArray = (payload: any): any[] => {
+    if (Array.isArray(payload)) return payload;
+
+    const extract = (obj: Record<string, unknown>): any[] | undefined => {
+      if (Array.isArray(obj.reclamantes)) return obj.reclamantes as any[];
+      if (Array.isArray(obj.items)) return obj.items as any[];
+      if (Array.isArray(obj.results)) return obj.results as any[];
+      if (Array.isArray(obj.data)) return obj.data as any[];
+
+      if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+        return extract(obj.data as Record<string, unknown>);
+      }
+
+      return undefined;
+    };
+
+    if (payload && typeof payload === 'object') {
+      const extracted = extract(payload as Record<string, unknown>);
+      if (Array.isArray(extracted)) return extracted;
+    }
+
+    return [];
+  };
+
+  const itemsArray = extractItemsArray(items);
+  const reclamantesArray = extractReclamantesArray(reclamantes);
+
+  const itemOptions = [
+    { value: '', label: 'Selecione um item' },
+    ...itemsArray
+      .filter((item: any) => item.status !== 'devolvido')
       .map((item: any) => ({
         value: item.id,
         label: `${item.nome} - ${item.categoria}`,
-      })) || [];
+      })),
+  ];
+
+  const reclamanteOptions = [
+    { value: '', label: 'Selecione um reclamante' },
+    ...reclamantesArray.map((rec: any) => ({
+      value: rec.id,
+      label: `${rec.nome} (${rec.documento})`,
+    })),
+  ];
+
+  if (loadingItems || loadingReclamantes) {
+    return <Loading />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -87,7 +192,6 @@ function NewDevolutionPageContent() {
         <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
       <div className="max-w-2xl mx-auto relative z-10">
-        {/* Header */}
         <div className="mb-12 animate-slide-up">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-4 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl shadow-lg">
@@ -104,18 +208,31 @@ function NewDevolutionPageContent() {
           </div>
         </div>
 
-        {/* Error/Success Alert */}
         {submitSuccess && (
-          <Alert
-            type="success"
-            title="✓ Sucesso!"
-            message="Devolução registrada com sucesso. Redirecionando..."
-            closeable={false}
-            animated
-          />
+          <div className="fixed top-6 left-4 right-4 sm:left-auto sm:right-6 z-50 w-auto sm:w-full sm:max-w-md animate-slide-down pointer-events-none">
+            <Alert
+              type="success"
+              title="Devolução registrada"
+              message="O cadastro foi concluído com sucesso. Redirecionando..."
+              closeable={false}
+              animated
+            />
+          </div>
         )}
 
-        {/* Form Card */}
+        {submitError && (
+          <div className="mb-6">
+            <Alert
+              type="error"
+              title="Erro ao salvar"
+              message={submitError}
+              closeable
+              onClose={() => setSubmitError(null)}
+              animated
+            />
+          </div>
+        )}
+
         <Card hover gradient className="shadow-2xl border-2 border-gradient-to-r from-emerald-200 to-teal-200 dark:border-teal-700/50">
           <CardHeader variant="gradient" color="emerald">
             <div className="flex items-center gap-3">
@@ -124,13 +241,23 @@ function NewDevolutionPageContent() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">Informações da Devolução</h2>
-                <p className="text-emerald-100 text-sm">Registre a devolução do achado</p>
+                <p className="text-emerald-100 text-sm">Preencha os dados do registro</p>
               </div>
             </div>
           </CardHeader>
 
           <CardBody padding="lg">
             <form onSubmit={handleSubmit} className="space-y-7">
+              {/* Info Alert if no items available */}
+              {itemOptions.length <= 1 && (
+                <Alert
+                  type="warning"
+                  title="Nenhum item disponível"
+                  message="Não há itens para devolver no momento. Todos os itens já foram devolvidos."
+                  closeable={false}
+                />
+              )}
+
               {/* Row 1: Item and Reclamante */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Select
@@ -152,7 +279,6 @@ function NewDevolutionPageContent() {
                 />
               </div>
 
-              {/* Row 2: Data de Devolução */}
               <Input
                 label="Data da Devolução"
                 name="data_devolucao"
@@ -160,9 +286,9 @@ function NewDevolutionPageContent() {
                 value={formData.data_devolucao}
                 onChange={handleChange}
                 error={errors.data_devolucao}
+                icon={<Calendar size={20} />}
               />
 
-              {/* Row 3: Observação */}
               <Textarea
                 label="Observações"
                 name="observacao"
@@ -172,7 +298,6 @@ function NewDevolutionPageContent() {
                 rows={5}
               />
 
-              {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t-2 border-gradient-to-r from-emerald-200 to-teal-200 dark:border-teal-700/50">
                 <Button
                   type="submit"
@@ -180,7 +305,7 @@ function NewDevolutionPageContent() {
                   size="lg"
                   fullWidth
                   loading={submitting}
-                  disabled={submitting}
+                  disabled={submitting || itemOptions.length <= 1}
                   icon={<Save size={20} />}
                 >
                   {submitting ? 'Salvando...' : 'Registrar Devolução'}
