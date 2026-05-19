@@ -19,9 +19,8 @@ const API_URLS = {
   ITEM: "/api/proxy/item",
   LOCAL: "/api/proxy/local",
   RESPONSAVEL: "/api/proxy/responsavel",
-  DEVOLUCAO: process.env.NEXT_PUBLIC_API_DEVOLUCAO_URL || "http://localhost:8004",
-  RECLAMANTE:
-    process.env.NEXT_PUBLIC_API_RECLAMANTE_URL || "http://localhost:8005",
+  DEVOLUCAO: "/api/proxy/devolucao",
+  RECLAMANTE: "/api/proxy/reclamante",
 };
 
 class ApiClient {
@@ -38,6 +37,11 @@ class ApiClient {
   private localPath(path = ""): string {
     const normalizedBase = API_URLS.LOCAL.replace(/\/$/, "");
     return `${normalizedBase}/api/v1/locais${path}`;
+  }
+
+  private devolucaoPath(path = ""): string {
+    const normalizedBase = API_URLS.DEVOLUCAO.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/devolucoes${path}`;
   }
 
   private extractItem(payload: unknown): Item {
@@ -134,7 +138,20 @@ class ApiClient {
       throw error;
     }
 
-    return response.json();
+    // Ler como texto para lidar com respostas sem conteúdo (204) ou com corpo vazio
+    const text = await response.text();
+    if (!text) {
+      // Retornar null/undefined conforme o tipo esperado pelo chamador
+      return null as unknown as T;
+    }
+
+    try {
+      return JSON.parse(text) as T;
+    } catch (parseError) {
+      // Se não for JSON, retornar o texto cru
+      // Isso evita falhas quando o servidor retorna uma string simples
+      return text as unknown as T;
+    }
   }
 
   // Item endpoints
@@ -180,7 +197,7 @@ class ApiClient {
   }
 
   async updateItemStatus(id: string, status: string): Promise<Item> {
-    return this.request(this.itemPath(`/${id}/status`), {
+    return this.request(this.itemPath(`/${id}`), {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
@@ -294,41 +311,49 @@ class ApiClient {
 
   // Devolução endpoints
   async getDevolucoes(page = 1, limit = 10): Promise<ApiListResponse<any>> {
-    return this.request(
-      `${API_URLS.DEVOLUCAO}/devolucoes?page=${page}&limit=${limit}`,
-      { method: "GET" }
-    );
+    return this.request(`${this.devolucaoPath('/')}?page=${page}&limit=${limit}`, { method: 'GET' });
   }
 
   async getDevolutionById(id: string): Promise<any> {
-    return this.request(`${API_URLS.DEVOLUCAO}/devolucoes/${id}`, {
-      method: "GET",
-    });
+    return this.request(this.devolucaoPath(`/${id}`), { method: 'GET' });
   }
 
   async createDevolucao(data: any): Promise<any> {
-    return this.request(`${API_URLS.DEVOLUCAO}/devolucoes`, {
-      method: "POST",
+    return this.request(this.devolucaoPath('/'), {
+      method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
+  async updateDevolucao(id: string, data: any): Promise<any> {
+    return this.request(this.devolucaoPath(`/${id}`), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteDevolucao(id: string): Promise<void> {
+    return this.request(this.devolucaoPath(`/${id}`), {
+      method: 'DELETE',
+    });
+  }
+
   // Reclamante endpoints
-  async getReclamantes(page = 1, limit = 10): Promise<ApiListResponse<any>> {
+  async getReclamantes(skip = 0, limit = 10): Promise<ApiListResponse<any>> {
     return this.request(
-      `${API_URLS.RECLAMANTE}/reclamantes?page=${page}&limit=${limit}`,
+      `${API_URLS.RECLAMANTE}/api/v1/reclamantes/?skip=${skip}&limit=${limit}`,
       { method: "GET" }
     );
   }
 
   async getReclamanteById(id: string): Promise<any> {
-    return this.request(`${API_URLS.RECLAMANTE}/reclamantes/${id}`, {
+    return this.request(`${API_URLS.RECLAMANTE}/api/v1/reclamantes/${id}`, {
       method: "GET",
     });
   }
 
   async createReclamante(data: any): Promise<any> {
-    return this.request(`${API_URLS.RECLAMANTE}/reclamantes`, {
+    return this.request(`${API_URLS.RECLAMANTE}/api/v1/reclamantes/`, {
       method: "POST",
       body: JSON.stringify(data),
     });
