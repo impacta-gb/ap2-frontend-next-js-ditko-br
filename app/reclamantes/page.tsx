@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Loading, Alert } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
 import { Reclamante } from '@/src/types';
-import { Plus, User, Phone, ArrowRight, RotateCcw } from 'lucide-react';
+import { Plus, User, Phone, ArrowRight, RotateCcw, Edit, X } from 'lucide-react';
 
 interface ReclamanteListState {
   items: Reclamante[];
@@ -73,7 +73,7 @@ const normalizePages = (payload: unknown, total: number): number => {
 
 export default function ReclamantesPage() {
   const [page, setPage] = useState(1);
-  const { data, loading, error } = useFetch<ReclamanteListState>(
+  const { data, loading, error, refetch } = useFetch<ReclamanteListState>(
     async () => {
       const response = await apiClient.getReclamantes(page, RECLAMANTES_PER_PAGE);
       const items = normalizeReclamanteArray(response);
@@ -88,6 +88,26 @@ export default function ReclamantesPage() {
     },
     [page]
   );
+
+  const [deletingIds, setDeletingIds] = useState<string[]>([]);
+  const [actionAlert, setActionAlert] = useState<null | { type: 'success' | 'error'; title: string; message: string }>(null);
+  const alertTimer = useRef<number | null>(null);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Confirma a exclusão deste reclamante?')) return;
+    setDeletingIds((prev) => [...prev, id]);
+    try {
+      await apiClient.deleteReclamante(id);
+      setActionAlert({ type: 'success', title: 'Excluído', message: 'Reclamante excluído.' });
+      refetch();
+    } catch (err) {
+      setActionAlert({ type: 'error', title: 'Erro', message: String((err as any)?.message || 'Falha ao excluir') });
+    } finally {
+      setDeletingIds((prev) => prev.filter((x) => x !== id));
+      if (alertTimer.current) window.clearTimeout(alertTimer.current as any);
+      alertTimer.current = window.setTimeout(() => setActionAlert(null), 3500) as unknown as number;
+    }
+  };
 
   const reclamantes = Array.isArray(data?.items) ? data.items : [];
   const totalReclamantes = data?.total || 0;
@@ -147,12 +167,25 @@ export default function ReclamantesPage() {
                     </div>
                   </div>
                 </CardHeader>
-                <div className="flex justify-end px-6 pb-5">
+                <div className="flex justify-end px-6 pb-5 gap-2">
                   <Link href={`/reclamantes/${reclamante.id}`}>
-                    <Button variant="secondary" size="sm">
-                      Ver detalhes
-                    </Button>
+                    <Button variant="secondary" size="sm">Ver detalhes</Button>
                   </Link>
+                  <Link href={`/reclamantes/${reclamante.id}/edit`}>
+                    <Button variant="outline" size="sm" icon={<Edit size={14} />}>Editar</Button>
+                  </Link>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleDelete(reclamante.id)}
+                    disabled={deletingIds.includes(reclamante.id)}
+                  >
+                    {deletingIds.includes(reclamante.id) ? 'Excluindo...' : (
+                      <>
+                        <X size={12} /> Excluir
+                      </>
+                    )}
+                  </Button>
                 </div>
               </Card>
             ))}
