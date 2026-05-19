@@ -147,16 +147,6 @@ export default function ReclamantesPage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardBody className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-gray-50 dark:bg-gray-900 p-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">ID</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{reclamante.id}</p>
-                  </div>
-                  <div className="rounded-2xl bg-gray-50 dark:bg-gray-900 p-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Criado em</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{new Date(reclamante.criado_em).toLocaleString()}</p>
-                  </div>
-                </CardBody>
                 <div className="flex justify-end px-6 pb-5">
                   <Link href={`/reclamantes/${reclamante.id}`}>
                     <Button variant="secondary" size="sm">
