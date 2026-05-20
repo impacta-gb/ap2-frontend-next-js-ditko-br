@@ -5,6 +5,7 @@ interface StatsProps {
   trend?: 'up' | 'down' | 'neutral';
   color: 'blue' | 'purple' | 'emerald' | 'orange' | 'pink' | 'red';
   animated?: boolean;
+  bgColor?: string;
 }
 
 const colorMap = {
@@ -53,15 +54,13 @@ export const Stats = ({
   trend,
   color,
   animated = false,
+  bgColor,
 }: StatsProps) => {
   const colors = colorMap[color];
   const animationClass = animated ? 'animate-float' : '';
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 group ${animationClass}`}>
-      {/* Background gradient overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
-      
+    <div className={`relative overflow-hidden rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-3 group ${animationClass} ${bgColor || colors.bg} border border-gray-200/50 dark:border-gray-700/50 hover:border-blue-500/50`}>
       {/* Decorative elements */}
       <div className={`absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br ${colors.gradient} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`} />
       <div className={`absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-br ${colors.gradient} opacity-5 rounded-full blur-3xl group-hover:opacity-15 transition-opacity`} />
