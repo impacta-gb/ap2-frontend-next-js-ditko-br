@@ -1,9 +1,13 @@
 import {
   ApiError,
   ApiListResponse,
+  CreateItemRequest,
   CreateResponsavelRequest,
+  Item,
+  PatchItemRequest,
   PatchResponsavelRequest,
   Responsavel,
+  UpdateItemRequest,
   UpdateResponsavelRequest,
   Local,
   CreateLocalRequest,
@@ -15,15 +19,19 @@ import {
 } from "../types";
 
 const API_URLS = {
-  ITEM: process.env.NEXT_PUBLIC_API_ITEM_URL || "http://localhost:8001",
+  ITEM: "/api/proxy/item",
   LOCAL: "/api/proxy/local",
   RESPONSAVEL: "/api/proxy/responsavel",
-  DEVOLUCAO: process.env.NEXT_PUBLIC_API_DEVOLUCAO_URL || "http://localhost:8004",
-  RECLAMANTE:
-    "/api/proxy/reclamante",
+  DEVOLUCAO: "/api/proxy/devolucao",
+  RECLAMANTE: "/api/proxy/reclamante",
 };
 
 class ApiClient {
+  private itemPath(path = ""): string {
+    const normalizedBase = API_URLS.ITEM.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/items${path}`;
+  }
+
   private responsavelPath(path = ""): string {
     const normalizedBase = API_URLS.RESPONSAVEL.replace(/\/$/, "");
     return `${normalizedBase}/api/v1/responsaveis${path}`;
@@ -34,10 +42,34 @@ class ApiClient {
     return `${normalizedBase}/api/v1/locais${path}`;
   }
 
+  private devolucaoPath(path = ""): string {
+    const normalizedBase = API_URLS.DEVOLUCAO.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/devolucoes${path}`;
+  }
+
   private reclamantePath(path = ""): string {
     const normalizedBase = API_URLS.RECLAMANTE.replace(/\/$/, "");
-    const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
-    return `${normalizedBase}/api/v1/reclamantes${normalizedPath}`;
+    return `${normalizedBase}/api/v1/reclamantes${path}`;
+  }
+
+  private extractItem(payload: unknown): Item {
+    if (payload && typeof payload === "object") {
+      const obj = payload as Record<string, unknown>;
+
+      if (obj.data && typeof obj.data === "object" && !Array.isArray(obj.data)) {
+        return obj.data as Item;
+      }
+
+      if (
+        obj.item &&
+        typeof obj.item === "object" &&
+        !Array.isArray(obj.item)
+      ) {
+        return obj.item as Item;
+      }
+    }
+
+    return payload as Item;
   }
   private extractResponsavel(payload: unknown): Responsavel {
     if (payload && typeof payload === "object") {
@@ -107,7 +139,6 @@ class ApiClient {
         error.message = errorData.message || error.message;
         error.details = errorData.details;
       } catch {
-        // Continue with default error message
       }
 
       throw error;
@@ -115,44 +146,57 @@ class ApiClient {
 
     const text = await response.text();
     if (!text) {
-      return undefined as unknown as T;
+      return null as unknown as T;
     }
 
     try {
       return JSON.parse(text) as T;
-    } catch {
+    } catch (parseError) {
       return text as unknown as T;
     }
   }
 
   // Item endpoints
   async getItems(page = 1, limit = 10): Promise<ApiListResponse<any>> {
-    return this.request(
-      `${API_URLS.ITEM}/items?page=${page}&limit=${limit}`,
-      { method: "GET" }
-    );
+    return this.request(`${this.itemPath('/')}?page=${page}&limit=${limit}`, {
+      method: 'GET',
+    });
   }
 
   async getItemById(id: string): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, { method: "GET" });
+    return this.request(this.itemPath(`/${id}`), { method: 'GET' });
   }
 
   async createItem(data: any): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items`, {
-      method: "POST",
+    return this.request(this.itemPath('/'), {
+      method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateItem(id: string, data: any): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, {
-      method: "PUT",
+    return this.request(this.itemPath(`/${id}`), {
+      method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
+  async patchItem(id: string, data: PatchItemRequest): Promise<Item> {
+    return this.request(this.itemPath(`/${id}`), {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateItemStatus(id: string, status: string): Promise<Item> {
+    return this.request(this.itemPath(`/${id}`), {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  }
+
   async deleteItem(id: string): Promise<void> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, { method: "DELETE" });
+    return this.request(this.itemPath(`/${id}`), { method: 'DELETE' });
   }
 
   // Local endpoints
@@ -183,8 +227,6 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
-
-
 
   async deleteLocal(id: string): Promise<void> {
     return this.request(this.localPath(`/${id}`), {
@@ -255,41 +297,49 @@ class ApiClient {
 
   // Devolução endpoints
   async getDevolucoes(page = 1, limit = 10): Promise<ApiListResponse<any>> {
-    return this.request(
-      `${API_URLS.DEVOLUCAO}/devolucoes?page=${page}&limit=${limit}`,
-      { method: "GET" }
-    );
+    return this.request(`${this.devolucaoPath('/')}?page=${page}&limit=${limit}`, { method: 'GET' });
   }
 
   async getDevolutionById(id: string): Promise<any> {
-    return this.request(`${API_URLS.DEVOLUCAO}/devolucoes/${id}`, {
-      method: "GET",
-    });
+    return this.request(this.devolucaoPath(`/${id}`), { method: 'GET' });
   }
 
   async createDevolucao(data: any): Promise<any> {
-    return this.request(`${API_URLS.DEVOLUCAO}/devolucoes`, {
-      method: "POST",
+    return this.request(this.devolucaoPath('/'), {
+      method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
+  async updateDevolucao(id: string, data: any): Promise<any> {
+    return this.request(this.devolucaoPath(`/${id}`), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteDevolucao(id: string): Promise<void> {
+    return this.request(this.devolucaoPath(`/${id}`), {
+      method: 'DELETE',
+    });
+  }
+
   // Reclamante endpoints
-  async getReclamantes(page = 1, limit = 10): Promise<ApiListResponse<any>> {
+  async getReclamantes(skip = 0, limit = 10): Promise<ApiListResponse<any>> {
     return this.request(
-      `${this.reclamantePath('')}?page=${page}&limit=${limit}`,
+      `${API_URLS.RECLAMANTE}/api/v1/reclamantes/?skip=${skip}&limit=${limit}`,
       { method: "GET" }
     );
   }
 
   async getReclamanteById(id: string): Promise<any> {
-    return this.request(this.reclamantePath(`/${id}`), {
+    return this.request(`${API_URLS.RECLAMANTE}/api/v1/reclamantes/${id}`, {
       method: "GET",
     });
   }
 
   async createReclamante(data: any): Promise<any> {
-    return this.request(this.reclamantePath('/'), {
+    return this.request(`${API_URLS.RECLAMANTE}/api/v1/reclamantes/`, {
       method: "POST",
       body: JSON.stringify(data),
     });
