@@ -5,11 +5,23 @@ import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Badge, Loading, Alert } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
-import { translateStatus } from '@/src/lib/utils';
-import { Plus, MapPin, Calendar, Tag, Search } from 'lucide-react';
+import { translateStatus, formatDate, formatDateTime } from '@/src/lib/utils';
+import { Plus, MapPin, Calendar, Tag, Search, Eye, Pencil, Trash2, Users, Clock } from 'lucide-react';
 
 export default function ItemsPage() {
   const [page, setPage] = useState(1);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; title: string; message: string } | null>(null);
+  const [locaisMapa, setLocaisMapa] = useState<Record<string, any>>({});
+  const [responsaveisMapa, setResponsaveisMapa] = useState<Record<string, any>>({});
+
+  // Função auxiliar para retornar data de criação se campo estiver vazio
+  const getDisplayValue = (value: string | null | undefined, fallbackDate: string | null | undefined): string => {
+    if (value && value.trim() !== '') {
+      return value;
+    }
+    return fallbackDate ? formatDate(fallbackDate) : 'Não informado';
+  };
   const { data: items, loading, error, refetch } = useFetch(
     async () => {
       const response = await apiClient.getItems(page, 10);
@@ -31,6 +43,16 @@ export default function ItemsPage() {
       };
 
       const itemsArray = extractArray(response) || [];
+
+      // Debug: log da estrutura dos itens
+      if (itemsArray.length > 0) {
+        console.log('Item structure:', {
+          full: itemsArray[0],
+          local: itemsArray[0]?.local,
+          local_id: itemsArray[0]?.local_id,
+          localData: itemsArray[0]?.local_data,
+        });
+      }
 
       const normalizeTotal = (payload: unknown, fallback: number): number => {
         if (payload && typeof payload === 'object') {
@@ -60,6 +82,68 @@ export default function ItemsPage() {
     [page]
   );
 
+  // Carregar dados dos locais para mapeamento
+  useFetch(async () => {
+    const response = await apiClient.getLocais(1, 1000);
+    const extractArray = (obj: Record<string, unknown> | unknown): any[] | undefined => {
+      if (Array.isArray(obj)) return obj as any[];
+      if (!obj || typeof obj !== 'object') return undefined;
+      const o = obj as Record<string, unknown>;
+      if (Array.isArray(o.data)) return o.data as any[];
+      if (Array.isArray(o.items)) return o.items as any[];
+      return undefined;
+    };
+    const locais = extractArray(response) || [];
+    const mapa: Record<string, any> = {};
+    locais.forEach((local: any) => {
+      mapa[local.id] = local;
+    });
+    setLocaisMapa(mapa);
+    return locais;
+  }, []);
+
+  // Carregar dados dos responsáveis para mapeamento
+  useFetch(async () => {
+    const response = await apiClient.getResponsaveis(1, 1000);
+    const extractArray = (obj: Record<string, unknown> | unknown): any[] | undefined => {
+      if (Array.isArray(obj)) return obj as any[];
+      if (!obj || typeof obj !== 'object') return undefined;
+      const o = obj as Record<string, unknown>;
+      if (Array.isArray(o.data)) return o.data as any[];
+      if (Array.isArray(o.items)) return o.items as any[];
+      return undefined;
+    };
+    const responsaveis = extractArray(response) || [];
+    const mapa: Record<string, any> = {};
+    responsaveis.forEach((resp: any) => {
+      mapa[resp.id] = resp;
+    });
+    setResponsaveisMapa(mapa);
+    return responsaveis;
+  }, []);  const handleDelete = async (item: any) => {
+    const confirmou = window.confirm(`Deseja realmente excluir o item "${item.nome}"?`);
+    if (!confirmou) return;
+
+    try {
+      setActionLoadingId(item.id);
+      await apiClient.deleteItem(item.id);
+      setAlert({
+        type: 'success',
+        title: 'Item excluído',
+        message: 'O registro foi removido com sucesso.',
+      });
+      refetch();
+    } catch {
+      setAlert({
+        type: 'error',
+        title: 'Erro ao excluir',
+        message: 'Não foi possível excluir o item.',
+      });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   if (loading) return <Loading />;
 
   if (error)
@@ -88,6 +172,18 @@ export default function ItemsPage() {
         <div className="absolute top-1/2 right-1/4 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
       <div className="max-w-7xl mx-auto relative z-10">
+        {alert && (
+          <div className="mb-6">
+            <Alert
+              type={alert.type}
+              title={alert.title}
+              message={alert.message}
+              onClose={() => setAlert(null)}
+              closeable
+              animated
+            />
+          </div>
+        )}
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
@@ -111,48 +207,86 @@ export default function ItemsPage() {
         {paginatedItems && paginatedItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {paginatedItems.map((item: any, index: number) => (
-              <Link key={item.id} href={`/items/${item.id}`} style={{ animationDelay: `${index * 0.1}s` }}>
-                <Card className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 h-full group overflow-hidden animate-scale-in hover-lift border-2 border-transparent hover:border-blue-300 dark:hover:border-blue-600">
-                  <CardHeader className="pb-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-700">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                          {item.nome}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
-                          <Tag size={14} />
-                          {item.categoria}
-                        </p>
-                      </div>
-                      <Badge
-                        label={translateStatus(item.status)}
-                        variant={
-                          item.status === 'disponível'
-                            ? 'success'
-                            : item.status === 'devolvido'
-                            ? 'info'
-                            : 'warning'
-                        }
-                      />
+              <Card
+                key={item.id}
+                className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group overflow-hidden animate-scale-in border-2 border-transparent hover:border-blue-300 dark:hover:border-blue-600"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <CardHeader className="pb-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-700">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {item.nome}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                        <Tag size={14} />
+                        {item.categoria}
+                      </p>
                     </div>
-                  </CardHeader>
-                  <CardBody>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4">
-                      {item.descricao}
-                    </p>
-                    <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
-                      <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
-                        <MapPin size={16} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                        <span className="font-medium">{item.local?.tipo}</span>
-                      </div>
-                      <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
-                        <Calendar size={16} className="text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                        <span className="font-medium">{item.data_encontro}</span>
-                      </div>
+                    <Badge
+                      label={translateStatus(item.status)}
+                      variant={
+                        item.status === 'disponível'
+                          ? 'success'
+                          : item.status === 'devolvido'
+                          ? 'info'
+                          : 'warning'
+                      }
+                    />
+                  </div>
+                </CardHeader>
+                <CardBody>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4">
+                    {item.descricao}
+                  </p>
+                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
+                    <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                      <MapPin size={14} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                      <span className="font-medium truncate text-xs">
+                        {item.local?.tipo || locaisMapa[item.local_id]?.tipo || getDisplayValue('', item.criado_em)}
+                      </span>
                     </div>
-                  </CardBody>
-                </Card>
-              </Link>
+                    <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                      <Calendar size={14} className="text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                      <span className="font-medium text-xs">{formatDate(item.data_encontro || '') || getDisplayValue('', item.criado_em)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                      <Users size={14} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                      <span className="font-medium truncate text-xs">
+                        {item.responsavel?.nome || responsaveisMapa[item.responsavel_id]?.nome || getDisplayValue('', item.criado_em)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                      <Clock size={14} className="text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                      <span className="font-medium text-xs">{formatDate(item.criado_em || '')}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <Link href={`/items/${item.id}`}>
+                      <Button variant="outline" size="sm" fullWidth icon={<Eye size={16} />}>
+                        Ver
+                      </Button>
+                    </Link>
+                    <Link href={`/items/${item.id}/edit`}>
+                      <Button variant="secondary" size="sm" fullWidth icon={<Pencil size={16} />}>
+                        Editar
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      fullWidth
+                      loading={actionLoadingId === item.id}
+                      onClick={() => handleDelete(item)}
+                      icon={<Trash2 size={16} />}
+                      className="col-span-2"
+                    >
+                      Excluir
+                    </Button>
+                  </div>
+                </CardBody>
+              </Card>
             ))}
           </div>
         ) : (
