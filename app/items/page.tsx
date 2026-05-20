@@ -10,7 +10,55 @@ import { Plus, MapPin, Calendar, Tag, Search } from 'lucide-react';
 
 export default function ItemsPage() {
   const [page, setPage] = useState(1);
-  const { data: items, loading, error, refetch } = useFetch(() => apiClient.getItems(page, 10), [page]);
+  const { data: items, loading, error, refetch } = useFetch(
+    async () => {
+      const response = await apiClient.getItems(page, 10);
+
+      // Normalizar resposta para garantir compatibilidade com diferentes formatos
+      const extractArray = (obj: Record<string, unknown> | unknown): any[] | undefined => {
+        if (Array.isArray(obj)) return obj as any[];
+        if (!obj || typeof obj !== 'object') return undefined;
+        const o = obj as Record<string, unknown>;
+        if (Array.isArray(o.data)) return o.data as any[];
+        if (Array.isArray(o.items)) return o.items as any[];
+        if (Array.isArray(o.results)) return o.results as any[];
+        const resultsObj = (o.results as any) ?? undefined;
+        if (Array.isArray(resultsObj?.data)) return resultsObj.data as any[];
+        if (o.data && typeof o.data === 'object' && !Array.isArray(o.data)) {
+          return extractArray(o.data as Record<string, unknown>);
+        }
+        return undefined;
+      };
+
+      const itemsArray = extractArray(response) || [];
+
+      const normalizeTotal = (payload: unknown, fallback: number): number => {
+        if (payload && typeof payload === 'object') {
+          const obj = payload as Record<string, unknown>;
+          if (typeof obj.total === 'number') return obj.total;
+          if (typeof obj.count === 'number') return obj.count;
+          if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+            const dataObj = obj.data as Record<string, unknown>;
+            if (typeof dataObj.total === 'number') return dataObj.total;
+            if (typeof dataObj.count === 'number') return dataObj.count;
+          }
+        }
+        return fallback;
+      };
+
+      const total = normalizeTotal(response, itemsArray.length);
+      const pages = Math.max(1, Math.ceil(total / 10));
+
+      return {
+        data: itemsArray,
+        total,
+        page,
+        limit: 10,
+        pages,
+      };
+    },
+    [page]
+  );
 
   if (loading) return <Loading />;
 
