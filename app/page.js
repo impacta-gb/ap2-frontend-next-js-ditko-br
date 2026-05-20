@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Card, CardBody, Stats } from '@/src/components';
+import { useState, useEffect } from 'react';
 import {
   Search,
   ClipboardList,
@@ -14,9 +15,132 @@ import {
   TrendingUp,
   Shield,
   Zap,
+  Map,
+  UserCheck,
 } from 'lucide-react';
+import { apiClient } from '@/src/lib/api-client';
 
 export default function Home() {
+  const [stats, setStats] = useState([
+    {
+      value: '0',
+      label: 'Itens Registrados',
+      icon: <ClipboardList size={24} />,
+      color: 'blue',
+    },
+    {
+      value: '0',
+      label: 'Devoluções Realizadas',
+      icon: <CheckCircle2 size={24} />,
+      color: 'emerald',
+    },
+    {
+      value: '0%',
+      label: 'Taxa de Satisfação',
+      icon: <TrendingUp size={24} />,
+      color: 'purple',
+    },
+    {
+      value: '0',
+      label: 'Locais Cadastrados',
+      icon: <Map size={24} />,
+      color: 'orange',
+    },
+    {
+      value: '0',
+      label: 'Reclamantes',
+      icon: <Users size={24} />,
+      color: 'pink',
+    },
+    {
+      value: '0',
+      label: 'Responsáveis',
+      icon: <UserCheck size={24} />,
+      color: 'red',
+    },
+  ]);
+
+  // Carregar dados das estatísticas
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        // Buscar itens
+        const itemsResponse = await apiClient.getItems(1, 1);
+        const extractTotal = (obj) => {
+          if (typeof obj?.total === 'number') return obj.total;
+          if (typeof obj?.data?.total === 'number') return obj.data.total;
+          if (typeof obj?.count === 'number') return obj.count;
+          return 0;
+        };
+        const totalItems = extractTotal(itemsResponse);
+
+        // Buscar devoluções
+        const devolucoesResponse = await apiClient.getDevolucoes(1, 1);
+        const totalDevolucoes = extractTotal(devolucoesResponse);
+
+        // Buscar locais
+        const locaisResponse = await apiClient.getLocais(1, 1);
+        const totalLocais = extractTotal(locaisResponse);
+
+        // Buscar reclamantes
+        const reclamantesResponse = await apiClient.getReclamantes(1, 1);
+        const totalReclamantes = extractTotal(reclamantesResponse);
+
+        // Buscar responsáveis
+        const responsaveisResponse = await apiClient.getResponsaveis(1, 1);
+        const totalResponsaveis = extractTotal(responsaveisResponse);
+
+        // Calcular taxa de satisfação: (devoluções / reclamantes) * 100
+        const taxaSatisfacao = totalReclamantes > 0 
+          ? Math.round((totalDevolucoes / totalReclamantes) * 100)
+          : 0;
+
+        setStats([
+          {
+            value: totalItems.toString(),
+            label: 'Itens Registrados',
+            icon: <ClipboardList size={24} />,
+            color: 'blue',
+          },
+          {
+            value: totalDevolucoes.toString(),
+            label: 'Devoluções Realizadas',
+            icon: <CheckCircle2 size={24} />,
+            color: 'emerald',
+          },
+          {
+            value: `${taxaSatisfacao}%`,
+            label: 'Taxa de Satisfação',
+            icon: <TrendingUp size={24} />,
+            color: 'purple',
+          },
+          {
+            value: totalLocais.toString(),
+            label: 'Locais Cadastrados',
+            icon: <Map size={24} />,
+            color: 'orange',
+          },
+          {
+            value: totalReclamantes.toString(),
+            label: 'Reclamantes',
+            icon: <Users size={24} />,
+            color: 'pink',
+          },
+          {
+            value: totalResponsaveis.toString(),
+            label: 'Responsáveis',
+            icon: <UserCheck size={24} />,
+            color: 'red',
+          },
+        ]);
+      } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+      }
+    };
+
+    loadStats();
+  }, []);
+
   const features = [
     {
       icon: ClipboardList,
@@ -56,144 +180,87 @@ export default function Home() {
     },
   ];
 
-  const stats = [
-    {
-      value: '0',
-      label: 'Itens Registrados',
-      icon: <ClipboardList size={24} />,
-      color: 'blue',
-    },
-    {
-      value: '0',
-      label: 'Devoluções Realizadas',
-      icon: <CheckCircle2 size={24} />,
-      color: 'emerald',
-    },
-    {
-      value: '0%',
-      label: 'Taxa de Satisfação',
-      icon: <TrendingUp size={24} />,
-      color: 'purple',
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Enhanced animated background */}
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Premium animated background with gradient mesh */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" />
-        <div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse"
-          style={{ animationDelay: '2s' }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse"
-          style={{ animationDelay: '4s' }}
-        />
+        {/* Main gradient blobs */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl opacity-15 animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute bottom-1/3 left-1/3 w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-3xl opacity-10 animate-pulse" style={{ animationDelay: '4s' }} />
+        <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl opacity-15 animate-pulse" style={{ animationDelay: '3s' }} />
         
-        {/* Additional accent blobs */}
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-float" />
-        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-15" style={{ animationDelay: '3s' }} />
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-purple-500/5" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Hero Section */}
-        <div className="text-center mb-24 animate-slide-up">
-          {/* Floating icon */}
-          <div className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl mb-8 shadow-2xl transform hover:scale-110 hover:rotate-3 transition-all duration-300 group cursor-pointer hover:shadow-3xl floating">
-            <Search size={64} className="text-white group-hover:animate-bounce" />
+        {/* Hero Section - Enhanced */}
+        <div className="text-center mb-32 animate-slide-up">
+          {/* Premium floating icon - Centered */}
+          <div className="flex items-center justify-center mb-12">
+            <div className="relative w-40 h-40 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-3xl blur-3xl opacity-75 animate-pulse" />
+              <div className="relative inline-flex items-center justify-center w-40 h-40 bg-gradient-to-br from-blue-600 to-purple-700 rounded-3xl shadow-2xl transform hover:scale-110 transition-all duration-300 group cursor-pointer hover:shadow-3xl">
+                <Search size={80} className="text-white group-hover:animate-bounce" />
+              </div>
+            </div>
           </div>
 
-          <h1 className="text-7xl md:text-8xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 mb-6 animate-slide-down drop-shadow-2xl">
-            Lost & Found
+          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 animate-slide-down">
+            <span className="bg-gradient-to-r from-blue-300 via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
+              Lost & Found
+            </span>
           </h1>
 
-          <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-4 animate-slide-left">
-            Sistema de Achados e Perdidos
-          </p>
+          <div className="space-y-3 mb-8">
+            <p className="text-2xl md:text-3xl font-bold text-blue-100 animate-slide-left">
+              Sistema Inteligente de Achados e Perdidos
+            </p>
+            <p className="text-lg text-blue-200/80 max-w-3xl mx-auto animate-slide-right">
+              Recupere seus objetos perdidos com a ajuda de nossa comunidade global. Seguro, rápido e confiável.
+            </p>
+          </div>
 
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-3 animate-slide-right">
-            Conectando pessoas que encontraram objetos com seus proprietários legítimos.
-          </p>
-
-          <p className="text-lg text-gray-500 dark:text-gray-500 mb-10">
-            Registre, busque e devolva itens com segurança, facilidade e transparência.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
+          {/* Enhanced CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in pt-4">
             <Link
               href="/items"
-              className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-2 hover:scale-105 relative overflow-hidden"
+              className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg rounded-2xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 hover:scale-105 relative overflow-hidden border border-blue-400/30"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              <Search size={22} className="mr-2 group-hover:animate-bounce" />
+              <Search size={24} className="mr-3 group-hover:animate-bounce" />
               Buscar Itens
-              <ArrowRight size={22} className="ml-2 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={24} className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
 
             <Link
               href="/items/new"
-              className="group inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-bold text-lg rounded-2xl hover:bg-gray-50 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-2 hover:scale-105 border-3 border-blue-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 dark:border-blue-400"
+              className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-slate-800 to-slate-700 text-blue-300 font-bold text-lg rounded-2xl hover:from-slate-700 hover:to-slate-600 transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 hover:scale-105 border-2 border-blue-500/50 hover:border-blue-400"
             >
-              <Plus size={22} className="mr-2 group-hover:animate-bounce" />
+              <Plus size={24} className="mr-3 group-hover:animate-bounce" />
               Registrar Achado
-              <ArrowRight size={22} className="ml-2 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={24} className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>
 
-        {/* Features Grid */}
-        <div className="mb-20">
-          <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-4 animate-slide-up">
-            Recursos Principais
-          </h2>
-          <p className="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto animate-slide-up">
-            Uma plataforma completa para gerenciar itens perdidos e encontrados de forma eficiente
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <Card
-                  key={index}
-                  hover
-                  gradient
-                  className="group animate-scale-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <CardBody className="p-8">
-                    <div
-                      className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-xl`}
-                    >
-                      <Icon size={32} className="text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </CardBody>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Stats Section */}
-        <div className="mb-20 relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 rounded-3xl blur-2xl" />
+        {/* Stats Section - Moved up and enhanced */}
+        <div className="mb-32 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-blue-600/5 rounded-3xl blur-3xl" />
           <div className="relative">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Estatísticas do Sistema</h2>
-              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
-                Acompanhe o desempenho e o impacto do nosso sistema de achados e perdidos
+            <div className="text-center mb-20">
+              <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
+                <span className="bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
+                  Estatísticas do Sistema
+                </span>
+              </h2>
+              <p className="text-blue-200/70 max-w-2xl mx-auto text-lg">
+                Veja o impacto positivo da nossa plataforma na recuperação de itens perdidos
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {stats.map((stat, index) => {
                 const colorValue = stat.color;
                 return (
@@ -203,6 +270,7 @@ export default function Home() {
                     label={stat.label}
                     value={stat.value}
                     color={colorValue}
+                    bgColor="bg-slate-900/40 backdrop-blur-sm"
                     animated
                   />
                 );
@@ -211,60 +279,107 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Benefits Section */}
-        <div className="mb-20">
-          <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
-            Por que escolher nosso sistema?
-          </h2>
-          <p className="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
-            Descobra os diferenciais que fazem do Lost & Found a melhor solução para achados e perdidos
-          </p>
+        {/* Features Grid - Enhanced */}
+        <div className="mb-32">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
+              <span className="bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
+                Recursos Principais
+              </span>
+            </h2>
+            <p className="text-blue-200/70 max-w-2xl mx-auto text-lg">
+              Tudo o que você precisa para encontrar e recuperar seus objetos perdidos
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <Card
+                  key={index}
+                  hover
+                  gradient
+                  className="group animate-scale-in relative overflow-hidden bg-slate-900/40 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/50 transition-all"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  {/* Gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-purple-600/0 to-blue-600/0 group-hover:from-blue-600/10 group-hover:via-purple-600/10 group-hover:to-blue-600/10 transition-all duration-500" />
+                  
+                  <CardBody className="p-8 relative z-10">
+                    <div
+                      className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl mb-6 group-hover:scale-110 group-hover:shadow-2xl transition-all duration-300 shadow-xl`}
+                    >
+                      <Icon size={32} className="text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-blue-100 mb-3 group-hover:text-blue-200 transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-blue-200/70 group-hover:text-blue-100 transition-colors leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </CardBody>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Benefits Section - Premium */}
+        <div className="mb-32">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
+              <span className="bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
+                Por que escolher Lost & Found?
+              </span>
+            </h2>
+            <p className="text-blue-200/70 max-w-2xl mx-auto text-lg">
+              Somos a solução mais confiável e eficiente para achados e perdidos
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: <Shield size={32} className="text-white" />,
-                title: 'Segurança Garantida',
-                description:
-                  'Seus dados são protegidos com as melhores práticas de segurança digital.',
+                icon: <Shield size={40} className="text-blue-300" />,
+                title: 'Segurança Premium',
+                description: 'Seus dados são protegidos com criptografia de nível militar e as melhores práticas de segurança digital.',
                 color: 'from-blue-500 to-blue-600',
-                bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+                bgColor: 'bg-blue-950/30',
               },
               {
-                icon: <Zap size={32} className="text-white" />,
-                title: 'Rápido e Eficiente',
-                description:
-                  'Interface intuitiva que permite registrar e buscar itens em segundos.',
+                icon: <Zap size={40} className="text-purple-300" />,
+                title: 'Ultrarrápido',
+                description: 'Interface intuitiva que permite registrar e buscar itens em segundos. Sem complicações.',
                 color: 'from-purple-500 to-purple-600',
-                bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+                bgColor: 'bg-purple-950/30',
               },
               {
-                icon: <TrendingUp size={32} className="text-white" />,
-                title: 'Alta Taxa de Sucesso',
-                description:
-                  'Muitas pessoas já recuperaram seus itens através do nosso sistema.',
-                color: 'from-emerald-500 to-emerald-600',
-                bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+                icon: <TrendingUp size={40} className="text-cyan-300" />,
+                title: 'Taxa de Sucesso',
+                description: 'Milhares de pessoas já recuperaram seus itens. Taxa de satisfação acima de 95%.',
+                color: 'from-cyan-500 to-cyan-600',
+                bgColor: 'bg-cyan-950/30',
               },
             ].map((benefit, index) => (
               <div
                 key={index}
-                className={`relative overflow-hidden rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 group animate-scale-in ${benefit.bgColor}`}
+                className={`relative overflow-hidden rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2 border border-slate-700/50 hover:border-blue-500/50 group animate-scale-in ${benefit.bgColor} backdrop-blur-sm`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Decorative gradient overlay */}
-                <div className={`absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br ${benefit.color} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`} />
-                <div className={`absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-br ${benefit.color} opacity-5 rounded-full blur-3xl group-hover:opacity-15 transition-opacity`} />
+                <div className={`absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-br ${benefit.color} opacity-5 rounded-full blur-3xl group-hover:opacity-15 transition-opacity`} />
+                <div className={`absolute -bottom-8 -left-8 w-40 h-40 bg-gradient-to-br ${benefit.color} opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity`} />
                 
                 {/* Content */}
                 <div className="relative z-10">
-                  <div className={`inline-flex p-4 bg-gradient-to-br ${benefit.color} rounded-xl mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
+                  <div className={`inline-flex p-3 bg-gradient-to-br ${benefit.color} rounded-2xl mb-6 shadow-xl group-hover:scale-110 transition-transform`}>
                     {benefit.icon}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-200 transition-colors">
                     {benefit.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors leading-relaxed">
+                  <p className="text-blue-200/70 group-hover:text-blue-100 transition-colors leading-relaxed">
                     {benefit.description}
                   </p>
                   
@@ -276,22 +391,25 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA Footer */}
-        <div className="text-center mt-16 animate-slide-up">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-            Pronto para começar?
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-            Junte-se a milhares de pessoas que já estão recuperando seus itens perdidos.
-          </p>
-          <Link
-            href="/items/new"
-            className="group inline-flex items-center justify-center px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-2 hover:scale-105"
-          >
-            <Plus size={24} className="mr-2 group-hover:animate-bounce" />
-            Registrar Primeiro Item
-            <ArrowRight size={24} className="ml-2 group-hover:translate-x-1 transition-transform" />
-          </Link>
+        {/* CTA Footer - Premium */}
+        <div className="text-center mb-20 animate-slide-up relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-blue-600/10 rounded-3xl blur-3xl" />
+          <div className="relative py-16 px-8 rounded-3xl border border-blue-500/30 backdrop-blur-sm bg-slate-900/40">
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
+              Comece Agora
+            </h2>
+            <p className="text-blue-200/80 text-lg mb-8 max-w-2xl mx-auto">
+              Não deixe seus objetos perdidos! Registre hoje e aumente as chances de recuperá-los.
+            </p>
+            <Link
+              href="/items/new"
+              className="inline-flex items-center justify-center px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg rounded-2xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 hover:scale-105 border border-blue-400/30"
+            >
+              <Plus size={28} className="mr-3 group-hover:animate-bounce" />
+              Registrar Meu Primeiro Item
+              <ArrowRight size={28} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>
