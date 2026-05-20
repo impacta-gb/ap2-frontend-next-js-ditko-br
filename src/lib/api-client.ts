@@ -158,26 +158,25 @@ class ApiClient {
 
   // Item endpoints
   async getItems(page = 1, limit = 10): Promise<ApiListResponse<any>> {
-    return this.request(
-      `${API_URLS.ITEM}/items?page=${page}&limit=${limit}`,
-      { method: "GET" }
-    );
+    return this.request(`${this.itemPath('/')}?page=${page}&limit=${limit}`, {
+      method: 'GET',
+    });
   }
 
   async getItemById(id: string): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, { method: "GET" });
+    return this.request(this.itemPath(`/${id}`), { method: 'GET' });
   }
 
   async createItem(data: any): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items`, {
-      method: "POST",
+    return this.request(this.itemPath('/'), {
+      method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateItem(id: string, data: any): Promise<any> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, {
-      method: "PUT",
+    return this.request(this.itemPath(`/${id}`), {
+      method: 'PUT',
       body: JSON.stringify(data),
     });
   }
@@ -197,7 +196,7 @@ class ApiClient {
   }
 
   async deleteItem(id: string): Promise<void> {
-    return this.request(`${API_URLS.ITEM}/items/${id}`, { method: "DELETE" });
+    return this.request(this.itemPath(`/${id}`), { method: 'DELETE' });
   }
 
   // Local endpoints
