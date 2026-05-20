@@ -131,18 +131,14 @@ class ApiClient {
       throw error;
     }
 
-    // Ler como texto para lidar com respostas sem conteúdo (204) ou com corpo vazio
     const text = await response.text();
     if (!text) {
-      // Retornar null/undefined conforme o tipo esperado pelo chamador
       return null as unknown as T;
     }
 
     try {
       return JSON.parse(text) as T;
     } catch (parseError) {
-      // Se não for JSON, retornar o texto cru
-      // Isso evita falhas quando o servidor retorna uma string simples
       return text as unknown as T;
     }
   }
@@ -219,8 +215,6 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
-
-
 
   async deleteLocal(id: string): Promise<void> {
     return this.request(this.localPath(`/${id}`), {
