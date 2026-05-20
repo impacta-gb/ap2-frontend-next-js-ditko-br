@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Loading, Alert } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
-import { RotateCcw, Package, Calendar, ArrowRight, Plus, Eye, Pencil, Trash2 } from 'lucide-react';
+import { RotateCcw, Package, Calendar, ArrowRight, Plus, Eye, Pencil, Trash2, Clock } from 'lucide-react';
 import { Local } from '@/src/types';
+import { formatDate } from '@/src/lib/utils';
 
 interface LocalListState {
   items: Local[];
@@ -69,7 +70,7 @@ const normalizePages = (payload: unknown, total: number): number => {
     }
   }
 
-  return Math.max(1, Math.ceil(total / LOCAIS_PER_PAGE));
+  return Math.max(0, Math.ceil(total / LOCAIS_PER_PAGE));
 };
 
 
@@ -78,6 +79,15 @@ export default function LocaisPage() {
   const [page, setPage] = useState(1);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; title: string; message: string } | null>(null);
+
+  // Função auxiliar para retornar data de criação se campo estiver vazio
+  const getDisplayValue = (value: string | null | undefined, fallbackDate: string | null | undefined): string => {
+    if (value && value.trim() !== '') {
+      return value;
+    }
+    return fallbackDate ? formatDate(fallbackDate) : 'Não informado';
+  };
+
   const { data: locais, loading, error, refetch } = useFetch<LocalListState>(
     async () => {
       const response = await apiClient.getLocais(page, LOCAIS_PER_PAGE);
@@ -168,60 +178,32 @@ export default function LocaisPage() {
 
         {/* locais List */}
         {locaisItems.length > 0 ? (
-          <div className="space-y-4 mb-8">
-            {locaisItems.map((loc: any) => (
-              <Card key={loc.id} className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-                <CardBody className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-                    {/* Bairro */}
-                    <div className="flex gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg flex-shrink-0">
-                        <Calendar size={20} className="text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 font-semibold">
-                          Bairro do Local
-                        </p>
-                        <p className="font-bold text-gray-900 dark:text-white">
-                          {loc.bairro}
-                        </p>
-                      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {locaisItems.map((loc: any, index: number) => (
+              <Card 
+                key={loc.id} 
+                className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group overflow-hidden animate-scale-in border-2 border-transparent hover:border-green-300 dark:hover:border-green-600"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <CardHeader className="pb-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                    {loc.tipo}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {loc.bairro}
+                  </p>
+                </CardHeader>
+                <CardBody>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4">
+                    {loc.descricao}
+                  </p>
+                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
+                    <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                      <Clock size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                      <span className="font-medium text-xs">{getDisplayValue('', loc.criado_em)}</span>
                     </div>
-
-                    {/* Descrição */}
-                    <div className="flex gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg flex-shrink-0">
-                        <Calendar size={20} className="text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 font-semibold">
-                          Descrição do Local
-                        </p>
-                        <p className="font-bold text-gray-900 dark:text-white">
-                          {loc.descricao}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Tipo */}
-                    <div className="flex gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg flex-shrink-0">
-                        <Calendar size={20} className="text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 font-semibold">
-                          Tipo do Local
-                        </p>
-                        <p className="font-bold text-gray-900 dark:text-white">
-                          {loc.tipo}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    
-                    <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <Link href={`/locais/${loc.id}`}>
                       <Button variant="outline" size="sm" fullWidth icon={<Eye size={16} />}>
                         Ver
@@ -232,7 +214,6 @@ export default function LocaisPage() {
                         Editar
                       </Button>
                     </Link>
-                   
                     <Button
                       variant="danger"
                       size="sm"
@@ -240,14 +221,11 @@ export default function LocaisPage() {
                       loading={actionLoadingId === loc.id}
                       onClick={() => handleDelete(loc)}
                       icon={<Trash2 size={16} />}
+                      className="col-span-2"
                     >
                       Excluir
                     </Button>
                   </div>
-
-                  </div>
-
-                  
                 </CardBody>
               </Card>
             ))}
