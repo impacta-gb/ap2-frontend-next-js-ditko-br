@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Input, Textarea, Select, Alert, Loading } from '@/src/components';
@@ -12,6 +12,28 @@ export default function NewItemPage() {
   const router = useRouter();
   const { data: locais, loading: loadingLocais } = useFetch(() => apiClient.getLocais(1, 100));
   const { data: responsaveis, loading: loadingResponsaveis } = useFetch(() => apiClient.getResponsaveis(1, 100));
+  const alertTimerRef = useRef<number | null>(null);
+  const redirectTimerRef = useRef<number | null>(null);
+  const [submitAlert, setSubmitAlert] = useState<{
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (alertTimerRef.current) window.clearTimeout(alertTimerRef.current);
+      if (redirectTimerRef.current) window.clearTimeout(redirectTimerRef.current);
+    };
+  }, []);
+
+  const showAlert = (alert: { type: 'success' | 'error'; title: string; message: string }) => {
+    setSubmitAlert(alert);
+    if (alertTimerRef.current) window.clearTimeout(alertTimerRef.current);
+    alertTimerRef.current = window.setTimeout(() => {
+      setSubmitAlert(null);
+    }, 3500);
+  };
   
   const [formData, setFormData] = useState({
     nome: '',
@@ -61,14 +83,21 @@ export default function NewItemPage() {
     setSubmitError(null);
     
     try {
-      await apiClient.createItem(formData);
-      setSubmitSuccess(true);
-      // Redirecionar após 1.5 segundos
-      setTimeout(() => {
+      const resp = await apiClient.createItem(formData);
+      console.log('createItem response:', resp);
+      showAlert({ type: 'success', title: 'Item registrado', message: 'O cadastro foi concluído com sucesso.' });
+      setSubmitting(false);
+      if (redirectTimerRef.current) window.clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = window.setTimeout(() => {
         router.push('/items');
-      }, 1500);
+      }, 2200);
     } catch (error: any) {
-      setSubmitError(error.message || 'Erro ao registrar item');
+      console.error('Erro ao criar item:', error);
+      let msg = 'Erro ao registrar item';
+      if (error?.message) msg = error.message;
+      else if (typeof error?.details === 'string') msg = error.details;
+      else if (error?.details) msg = JSON.stringify(error.details);
+      showAlert({ type: 'error', title: 'Erro ao salvar', message: msg });
       setSubmitting(false);
     }
   };
@@ -76,11 +105,26 @@ export default function NewItemPage() {
   // Função auxiliar para extrair array de locais
   const extractLocaisArray = (payload: any): any[] => {
     if (Array.isArray(payload)) return payload;
+
+    const extract = (obj: Record<string, unknown>): any[] | undefined => {
+      if (Array.isArray(obj.locais)) return obj.locais as any[];
+      if (Array.isArray(obj.locals)) return obj.locals as any[];
+      if (Array.isArray(obj.items)) return obj.items as any[];
+      if (Array.isArray(obj.results)) return obj.results as any[];
+      if (Array.isArray(obj.data)) return obj.data as any[];
+
+      if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+        return extract(obj.data as Record<string, unknown>);
+      }
+
+      return undefined;
+    };
+
     if (payload && typeof payload === 'object') {
-      if (Array.isArray(payload.data)) return payload.data;
-      if (Array.isArray(payload.items)) return payload.items;
-      if (Array.isArray(payload.locais)) return payload.locais;
+      const extracted = extract(payload as Record<string, unknown>);
+      if (Array.isArray(extracted)) return extracted;
     }
+
     return [];
   };
 
@@ -106,6 +150,9 @@ export default function NewItemPage() {
   const locaisArray = extractLocaisArray(locais);
   const responsaveisArray = extractResponsaveisArray(responsaveis);
 
+  // Mostrar apenas responsáveis ativos no select
+  const responsaveisAtivos = responsaveisArray.filter((r: any) => r && typeof r === 'object' ? Boolean((r as any).ativo) : false);
+
   const localOptions = [
     { value: '', label: 'Selecione um local' },
     ...locaisArray.map((local: any) => ({
@@ -116,7 +163,7 @@ export default function NewItemPage() {
 
   const responsavelOptions = [
     { value: '', label: 'Selecione um responsável' },
-    ...responsaveisArray.map((resp: any) => ({
+    ...responsaveisAtivos.map((resp: any) => ({
       value: resp.id,
       label: `${resp.nome} - ${resp.cargo}`,
     })),
@@ -152,25 +199,16 @@ export default function NewItemPage() {
           </div>
         </div>
 
-        {/* Error/Success Alert */}
-        {submitError && (
-          <Alert
-            type="error"
-            title="Erro ao registrar"
-            message={submitError}
-            closeable={true}
-            animated
-          />
-        )}
-
-        {submitSuccess && (
-          <Alert
-            type="success"
-            title="🎉 Sucesso!"
-            message="Item registrado com sucesso. Redirecionando..."
-            closeable={false}
-            animated
-          />
+        {submitAlert && (
+          <div className="fixed top-6 left-4 right-4 sm:left-auto sm:right-6 z-50 w-auto sm:w-full sm:max-w-md animate-slide-down pointer-events-none">
+            <Alert
+              type={submitAlert.type}
+              title={submitAlert.title}
+              message={submitAlert.message}
+              closeable={false}
+              animated
+            />
+          </div>
         )}
 
         {/* Form Card */}
