@@ -1,9 +1,13 @@
 import {
   ApiError,
   ApiListResponse,
+  CreateItemRequest,
   CreateResponsavelRequest,
+  Item,
+  PatchItemRequest,
   PatchResponsavelRequest,
   Responsavel,
+  UpdateItemRequest,
   UpdateResponsavelRequest,
   Local,
   CreateLocalRequest,
@@ -15,7 +19,7 @@ import {
 } from "../types";
 
 const API_URLS = {
-  ITEM: process.env.NEXT_PUBLIC_API_ITEM_URL || "http://localhost:8001",
+  ITEM: "/api/proxy/item",
   LOCAL: "/api/proxy/local",
   RESPONSAVEL: "/api/proxy/responsavel",
   DEVOLUCAO: "/api/proxy/devolucao",
@@ -23,6 +27,11 @@ const API_URLS = {
 };
 
 class ApiClient {
+  private itemPath(path = ""): string {
+    const normalizedBase = API_URLS.ITEM.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/items${path}`;
+  }
+
   private responsavelPath(path = ""): string {
     const normalizedBase = API_URLS.RESPONSAVEL.replace(/\/$/, "");
     return `${normalizedBase}/api/v1/responsaveis${path}`;
@@ -36,6 +45,11 @@ class ApiClient {
   private devolucaoPath(path = ""): string {
     const normalizedBase = API_URLS.DEVOLUCAO.replace(/\/$/, "");
     return `${normalizedBase}/api/v1/devolucoes${path}`;
+  }
+
+  private reclamantePath(path = ""): string {
+    const normalizedBase = API_URLS.RECLAMANTE.replace(/\/$/, "");
+    return `${normalizedBase}/api/v1/reclamantes${path}`;
   }
 
   private extractItem(payload: unknown): Item {
@@ -125,7 +139,6 @@ class ApiClient {
         error.message = errorData.message || error.message;
         error.details = errorData.details;
       } catch {
-        // Continue with default error message
       }
 
       throw error;
