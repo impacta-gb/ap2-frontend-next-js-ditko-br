@@ -1,35 +1,29 @@
 import {
   ApiError,
   ApiListResponse,
-  CreateItemRequest,
   CreateResponsavelRequest,
-  Item,
-  PatchItemRequest,
   PatchResponsavelRequest,
   Responsavel,
-  UpdateItemRequest,
   UpdateResponsavelRequest,
   Local,
   CreateLocalRequest,
   PatchLocalRequest,
   UpdateLocalRequest,
+  Reclamante,
+  UpdateReclamanteRequest,
+  PatchReclamanteRequest
 } from "../types";
 
 const API_URLS = {
-  ITEM: "/api/proxy/item",
+  ITEM: process.env.NEXT_PUBLIC_API_ITEM_URL || "http://localhost:8001",
   LOCAL: "/api/proxy/local",
   RESPONSAVEL: "/api/proxy/responsavel",
   DEVOLUCAO: process.env.NEXT_PUBLIC_API_DEVOLUCAO_URL || "http://localhost:8004",
   RECLAMANTE:
-    process.env.NEXT_PUBLIC_API_RECLAMANTE_URL || "http://localhost:8005",
+    "/api/proxy/reclamante",
 };
 
 class ApiClient {
-  private itemPath(path = ""): string {
-    const normalizedBase = API_URLS.ITEM.replace(/\/$/, "");
-    return `${normalizedBase}/api/v1/items${path}`;
-  }
-
   private responsavelPath(path = ""): string {
     const normalizedBase = API_URLS.RESPONSAVEL.replace(/\/$/, "");
     return `${normalizedBase}/api/v1/responsaveis${path}`;
@@ -40,26 +34,11 @@ class ApiClient {
     return `${normalizedBase}/api/v1/locais${path}`;
   }
 
-  private extractItem(payload: unknown): Item {
-    if (payload && typeof payload === "object") {
-      const obj = payload as Record<string, unknown>;
-
-      if (obj.data && typeof obj.data === "object" && !Array.isArray(obj.data)) {
-        return obj.data as Item;
-      }
-
-      if (
-        obj.item &&
-        typeof obj.item === "object" &&
-        !Array.isArray(obj.item)
-      ) {
-        return obj.item as Item;
-      }
-    }
-
-    return payload as Item;
+  private reclamantePath(path = ""): string {
+    const normalizedBase = API_URLS.RECLAMANTE.replace(/\/$/, "");
+    const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
+    return `${normalizedBase}/api/v1/reclamantes${normalizedPath}`;
   }
-
   private extractResponsavel(payload: unknown): Responsavel {
     if (payload && typeof payload === "object") {
       const obj = payload as Record<string, unknown>;
@@ -106,6 +85,7 @@ class ApiClient {
   ): Promise<T> {
     const defaultHeaders = {
       "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     const response = await fetch(url, {
@@ -124,72 +104,55 @@ class ApiClient {
 
       try {
         const errorData = await response.json();
-        console.error('Resposta de erro da API:', errorData);
-        error.message = errorData.message || errorData.msg || JSON.stringify(errorData) || error.message;
-        error.details = errorData.details || errorData.errors;
-      } catch (parseError) {
-        console.error('Erro ao fazer parse da resposta de erro:', parseError);
+        error.message = errorData.message || error.message;
+        error.details = errorData.details;
+      } catch {
+        // Continue with default error message
       }
 
       throw error;
     }
 
-    return response.json();
+    const text = await response.text();
+    if (!text) {
+      return undefined as unknown as T;
+    }
+
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      return text as unknown as T;
+    }
   }
 
   // Item endpoints
-  async getItems(page = 1, limit = 10): Promise<ApiListResponse<Item>> {
+  async getItems(page = 1, limit = 10): Promise<ApiListResponse<any>> {
     return this.request(
-      `${this.itemPath("/")}?page=${page}&limit=${limit}`,
+      `${API_URLS.ITEM}/items?page=${page}&limit=${limit}`,
       { method: "GET" }
     );
   }
 
-  async getItemById(id: string): Promise<Item> {
-    const response = await this.request<unknown>(this.itemPath(`/${id}`), {
-      method: "GET",
-    });
-    return this.extractItem(response);
+  async getItemById(id: string): Promise<any> {
+    return this.request(`${API_URLS.ITEM}/items/${id}`, { method: "GET" });
   }
 
-  async getItemsByStatus(status: string): Promise<Item[]> {
-    return this.request(this.itemPath(`/status/${status}`), {
-      method: "GET",
-    });
-  }
-
-  async createItem(data: CreateItemRequest): Promise<Item> {
-    return this.request(this.itemPath("/"), {
+  async createItem(data: any): Promise<any> {
+    return this.request(`${API_URLS.ITEM}/items`, {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async updateItem(id: string, data: UpdateItemRequest): Promise<Item> {
-    return this.request(this.itemPath(`/${id}`), {
+  async updateItem(id: string, data: any): Promise<any> {
+    return this.request(`${API_URLS.ITEM}/items/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
-  async patchItem(id: string, data: PatchItemRequest): Promise<Item> {
-    return this.request(this.itemPath(`/${id}`), {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateItemStatus(id: string, status: string): Promise<Item> {
-    return this.request(this.itemPath(`/${id}/status`), {
-      method: "PATCH",
-      body: JSON.stringify({ status }),
-    });
-  }
-
   async deleteItem(id: string): Promise<void> {
-    return this.request(this.itemPath(`/${id}`), {
-      method: "DELETE",
-    });
+    return this.request(`${API_URLS.ITEM}/items/${id}`, { method: "DELETE" });
   }
 
   // Local endpoints
@@ -200,17 +163,15 @@ class ApiClient {
     );
   }
 
-  async getLocalById(id: string): Promise<Local> {
-    const response = await this.request(this.localPath(`/${id}`), { method: "GET" });
-    return this.extractLocal(response);
+  async getLocalById(id: string): Promise<any> {
+    return this.request(this.localPath(`/${id}`), { method: "GET" });
   }
 
   async createLocal(data: CreateLocalRequest): Promise<Local> {
-    const response = await this.request(this.localPath('/'), {
+    return this.request(this.localPath('/'), {
       method: "POST",
       body: JSON.stringify(data),
     });
-    return this.extractLocal(response);
   }
 
   async patchLocal(
@@ -316,23 +277,51 @@ class ApiClient {
   // Reclamante endpoints
   async getReclamantes(page = 1, limit = 10): Promise<ApiListResponse<any>> {
     return this.request(
-      `${API_URLS.RECLAMANTE}/reclamantes?page=${page}&limit=${limit}`,
+      `${this.reclamantePath('')}?page=${page}&limit=${limit}`,
       { method: "GET" }
     );
   }
 
   async getReclamanteById(id: string): Promise<any> {
-    return this.request(`${API_URLS.RECLAMANTE}/reclamantes/${id}`, {
+    return this.request(this.reclamantePath(`/${id}`), {
       method: "GET",
     });
   }
 
   async createReclamante(data: any): Promise<any> {
-    return this.request(`${API_URLS.RECLAMANTE}/reclamantes`, {
+    return this.request(this.reclamantePath('/'), {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
+
+    async updateReclamante(
+    id: string,
+    data: UpdateReclamanteRequest
+  ): Promise<Reclamante> {
+    return this.request(this.reclamantePath(`/${id}`), {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async patchReclamante(
+    id: string,
+    data: PatchReclamanteRequest
+  ): Promise<Reclamante> {
+    return this.request(this.reclamantePath(`/${id}`), {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteReclamante(id: string): Promise<void> {
+    return this.request(this.reclamantePath(`/${id}`), {
+      method: "DELETE",
+    });
+  }
+
+  
 }
 
 export const apiClient = new ApiClient();

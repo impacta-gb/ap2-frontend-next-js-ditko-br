@@ -159,3 +159,15 @@ export interface PatchResponsavelRequest {
   cargo?: string;
   telefone?: string;
 }
+
+export interface UpdateReclamanteRequest{
+  nome: string;
+  documento: string;
+  telefone: string;
+}
+
+export interface PatchReclamanteRequest {
+  nome?: string;
+  documento?: string;
+  telefone?: string;
+}
