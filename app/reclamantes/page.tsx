@@ -6,7 +6,8 @@ import { Card, CardBody, CardHeader, Button, Loading, Alert } from '@/src/compon
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
 import { Reclamante } from '@/src/types';
-import { Plus, User, Phone, ArrowRight, RotateCcw, Edit, X } from 'lucide-react';
+import { Plus, User, Phone, ArrowRight, RotateCcw, Edit, X, Eye, Trash2, Pencil, Clock } from 'lucide-react';
+import { formatDate } from '@/src/lib/utils';
 
 interface ReclamanteListState {
   items: Reclamante[];
@@ -68,11 +69,20 @@ const normalizePages = (payload: unknown, total: number): number => {
     }
   }
 
-  return Math.max(1, Math.ceil(total / RECLAMANTES_PER_PAGE));
+  return Math.max(0, Math.ceil(total / RECLAMANTES_PER_PAGE));
 };
 
 export default function ReclamantesPage() {
   const [page, setPage] = useState(1);
+
+  // Função auxiliar para retornar data de criação se campo estiver vazio
+  const getDisplayValue = (value: string | null | undefined, fallbackDate: string | null | undefined): string => {
+    if (value && value.trim() !== '') {
+      return value;
+    }
+    return fallbackDate ? formatDate(fallbackDate) : 'Não informado';
+  };
+
   const { data, loading, error, refetch } = useFetch<ReclamanteListState>(
     async () => {
       const response = await apiClient.getReclamantes(page, RECLAMANTES_PER_PAGE);
@@ -153,40 +163,56 @@ export default function ReclamantesPage() {
         </div>
 
         {reclamantes.length > 0 ? (
-          <div className="space-y-4 mb-8">
-            {reclamantes.map((reclamante) => (
-              <Card key={reclamante.id} className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{reclamante.nome}</h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Documento: {reclamante.documento}</p>
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                      <Phone size={16} /> {reclamante.telefone}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {reclamantes.map((reclamante, index: number) => (
+              <Card 
+                key={reclamante.id} 
+                className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group overflow-hidden animate-scale-in border-2 border-transparent hover:border-purple-300 dark:hover:border-purple-600"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <CardHeader className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-slate-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    {reclamante.nome}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+                    <Phone size={14} />
+                    {reclamante.telefone}
+                  </p>
+                </CardHeader>
+                <CardBody>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-1 mb-4">
+                    Documento: {reclamante.documento}
+                  </p>
+                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
+                    <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                      <Clock size={14} className="text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                      <span className="font-medium text-xs">{getDisplayValue('', reclamante.criado_em)}</span>
                     </div>
                   </div>
-                </CardHeader>
-                <div className="flex justify-end px-6 pb-5 gap-2">
-                  <Link href={`/reclamantes/${reclamante.id}`}>
-                    <Button variant="secondary" size="sm">Ver detalhes</Button>
-                  </Link>
-                  <Link href={`/reclamantes/${reclamante.id}/edit`}>
-                    <Button variant="outline" size="sm" icon={<Edit size={14} />}>Editar</Button>
-                  </Link>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleDelete(reclamante.id)}
-                    disabled={deletingIds.includes(reclamante.id)}
-                  >
-                    {deletingIds.includes(reclamante.id) ? 'Excluindo...' : (
-                      <>
-                        <X size={12} /> Excluir
-                      </>
-                    )}
-                  </Button>
-                </div>
+                  <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <Link href={`/reclamantes/${reclamante.id}`}>
+                      <Button variant="outline" size="sm" fullWidth icon={<Eye size={16} />}>
+                        Ver
+                      </Button>
+                    </Link>
+                    <Link href={`/reclamantes/${reclamante.id}/edit`}>
+                      <Button variant="secondary" size="sm" fullWidth icon={<Pencil size={16} />}>
+                        Editar
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      fullWidth
+                      onClick={() => handleDelete(reclamante.id)}
+                      loading={deletingIds.includes(reclamante.id)}
+                      icon={<Trash2 size={16} />}
+                      className="col-span-2"
+                    >
+                      Excluir
+                    </Button>
+                  </div>
+                </CardBody>
               </Card>
             ))}
           </div>
