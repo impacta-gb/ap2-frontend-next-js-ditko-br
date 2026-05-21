@@ -1,13 +1,44 @@
 /**
  * Formata uma data ISO para formato legível
+ * Suporta formatos: ISO, timestamp, DD/MM/YYYY, YYYY-MM-DD, etc
  */
-export const formatDate = (date: string): string => {
-  if (!date || typeof date !== "string") {
+export const formatDate = (date: string | null | undefined): string => {
+  if (!date || typeof date !== "string" || date.trim() === "") {
     return "Não informado";
   }
 
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) {
+  let parsed: Date | null = null;
+
+  // Tentar parsing de ISO
+  const isoDate = new Date(date);
+  if (!Number.isNaN(isoDate.getTime())) {
+    parsed = isoDate;
+  }
+
+  // Se falhar, tentar outros formatos
+  if (!parsed) {
+    // Tentar formato DD/MM/YYYY
+    const ddmmyyyyRegex = /^(\d{2})\/(\d{2})\/(\d{4})/;
+    const ddmmyyyyMatch = date.match(ddmmyyyyRegex);
+    if (ddmmyyyyMatch) {
+      const [, day, month, year] = ddmmyyyyMatch;
+      parsed = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    }
+  }
+
+  // Se ainda não conseguiu, tentar formato YYYY-MM-DD
+  if (!parsed) {
+    const yyyymmddRegex = /^(\d{4})-(\d{2})-(\d{2})/;
+    const yyyymmddMatch = date.match(yyyymmddRegex);
+    if (yyyymmddMatch) {
+      const [, year, month, day] = yyyymmddMatch;
+      parsed = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    }
+  }
+
+  // Se ainda falhar, retornar "Não informado"
+  if (!parsed || Number.isNaN(parsed.getTime())) {
+    console.warn(`Formato de data não reconhecido: "${date}"`);
     return "Não informado";
   }
 
@@ -20,14 +51,59 @@ export const formatDate = (date: string): string => {
 
 /**
  * Formata uma data e hora ISO para formato legível
+ * Suporta formatos: ISO, timestamp, DD/MM/YYYY HH:mm, etc
  */
-export const formatDateTime = (date: string): string => {
-  if (!date || typeof date !== "string") {
+export const formatDateTime = (date: string | null | undefined): string => {
+  if (!date || typeof date !== "string" || date.trim() === "") {
     return "Não informado";
   }
 
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) {
+  let parsed: Date | null = null;
+
+  // Tentar parsing de ISO
+  const isoDate = new Date(date);
+  if (!Number.isNaN(isoDate.getTime())) {
+    parsed = isoDate;
+  }
+
+  // Se falhar, tentar outros formatos
+  if (!parsed) {
+    // Tentar formato DD/MM/YYYY HH:mm:ss
+    const ddmmyyyyRegex = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?/;
+    const ddmmyyyyMatch = date.match(ddmmyyyyRegex);
+    if (ddmmyyyyMatch) {
+      const [, day, month, year, hours, minutes, seconds] = ddmmyyyyMatch;
+      parsed = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        parseInt(hours),
+        parseInt(minutes),
+        parseInt(seconds || "0")
+      );
+    }
+  }
+
+  // Se ainda não conseguiu, tentar formato YYYY-MM-DD
+  if (!parsed) {
+    const yyyymmddRegex = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2}))?)?/;
+    const yyyymmddMatch = date.match(yyyymmddRegex);
+    if (yyyymmddMatch) {
+      const [, year, month, day, hours = "00", minutes = "00", seconds = "00"] = yyyymmddMatch;
+      parsed = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        parseInt(hours),
+        parseInt(minutes),
+        parseInt(seconds)
+      );
+    }
+  }
+
+  // Se ainda falhar, retornar "Não informado"
+  if (!parsed || Number.isNaN(parsed.getTime())) {
+    console.warn(`Formato de data não reconhecido: "${date}"`);
     return "Não informado";
   }
 
@@ -69,7 +145,11 @@ export const phoneMask = (value: string): string => {
 /**
  * Obtém a cor do badge de status
  */
-export const getStatusColor = (status: string): string => {
+export const getStatusColor = (status: string | undefined): string => {
+  if (!status || typeof status !== 'string') {
+    return "bg-gray-100 text-gray-800";
+  }
+  
   const colors: Record<string, string> = {
     disponível: "bg-green-100 text-green-800",
     devolvido: "bg-blue-100 text-blue-800",
@@ -81,7 +161,11 @@ export const getStatusColor = (status: string): string => {
 /**
  * Traduz status para português
  */
-export const translateStatus = (status: string): string => {
+export const translateStatus = (status: string | undefined): string => {
+  if (!status || typeof status !== 'string') {
+    return 'Desconhecido';
+  }
+  
   const translations: Record<string, string> = {
     disponível: "Disponível",
     devolvido: "Devolvido",

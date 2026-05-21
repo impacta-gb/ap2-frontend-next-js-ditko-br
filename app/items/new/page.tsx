@@ -85,6 +85,18 @@ export default function NewItemPage() {
     try {
       const resp = await apiClient.createItem(formData);
       console.log('createItem response:', resp);
+      
+      // Armazenar data de criação no localStorage para fallback
+      if (resp?.id) {
+        const creationData = {
+          id: resp.id,
+          criado_em: new Date().toISOString(),
+        };
+        const itemCreationTimes = JSON.parse(localStorage.getItem('itemCreationTimes') || '{}');
+        itemCreationTimes[resp.id] = creationData.criado_em;
+        localStorage.setItem('itemCreationTimes', JSON.stringify(itemCreationTimes));
+      }
+      
       showAlert({ type: 'success', title: 'Item registrado', message: 'O cadastro foi concluído com sucesso.' });
       setSubmitting(false);
       if (redirectTimerRef.current) window.clearTimeout(redirectTimerRef.current);

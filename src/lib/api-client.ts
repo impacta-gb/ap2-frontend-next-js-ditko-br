@@ -158,13 +158,13 @@ class ApiClient {
 
   // Item endpoints
   async getItems(page = 1, limit = 10): Promise<ApiListResponse<any>> {
-    return this.request(`${this.itemPath('/')}?page=${page}&limit=${limit}`, {
+    return this.request(`${this.itemPath('/')}?page=${page}&limit=${limit}&include=local,responsavel`, {
       method: 'GET',
     });
   }
 
   async getItemById(id: string): Promise<any> {
-    return this.request(this.itemPath(`/${id}`), { method: 'GET' });
+    return this.request(this.itemPath(`/${id}?include=local,responsavel`), { method: 'GET' });
   }
 
   async createItem(data: any): Promise<any> {
