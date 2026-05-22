@@ -75,13 +75,7 @@ const normalizePages = (payload: unknown, total: number): number => {
 export default function ReclamantesPage() {
   const [page, setPage] = useState(1);
 
-  // Função auxiliar para retornar data de criação se campo estiver vazio
-  const getDisplayValue = (value: string | null | undefined, fallbackDate: string | null | undefined): string => {
-    if (value && value.trim() !== '') {
-      return value;
-    }
-    return fallbackDate ? formatDate(fallbackDate) : 'Não informado';
-  };
+  // Não renderizamos valores "Não informado" — blocos são exibidos somente quando o valor existir.
 
   const { data, loading, error, refetch } = useFetch<ReclamanteListState>(
     async () => {
@@ -128,9 +122,6 @@ export default function ReclamantesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -174,21 +165,27 @@ export default function ReclamantesPage() {
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                     {reclamante.nome}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                    <Phone size={14} />
-                    {reclamante.telefone}
-                  </p>
+                  {reclamante.telefone && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+                      <Phone size={14} />
+                      {reclamante.telefone}
+                    </p>
+                  )}
                 </CardHeader>
                 <CardBody>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-1 mb-4">
-                    Documento: {reclamante.documento}
-                  </p>
-                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
-                    <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
-                      <Clock size={14} className="text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                      <span className="font-medium text-xs">{getDisplayValue('', reclamante.criado_em)}</span>
+                  {reclamante.documento && (
+                    <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-1 mb-4">
+                      Documento: {reclamante.documento}
+                    </p>
+                  )}
+                  {reclamante.criado_em && (
+                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
+                      <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                        <Clock size={14} className="text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                        <span className="font-medium text-xs">{formatDate(reclamante.criado_em)}</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <Link href={`/reclamantes/${reclamante.id}`}>
                       <Button variant="outline" size="sm" fullWidth icon={<Eye size={16} />}>
@@ -222,7 +219,7 @@ export default function ReclamantesPage() {
             <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-pink-400 to-purple-400 opacity-10 rounded-full blur-3xl" />
             <div className="relative z-10 flex flex-col items-center justify-center text-center">
               <div className="relative mb-8">
-                <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-2xl blur-xl opacity-20 animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-400 rounded-2xl blur-xl opacity-20" />
                 <div className="relative inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/40 dark:to-purple-900/40 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
                   <RotateCcw size={56} className="text-transparent bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text" />
                 </div>
