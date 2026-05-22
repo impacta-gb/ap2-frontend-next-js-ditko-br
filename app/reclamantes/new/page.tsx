@@ -7,7 +7,7 @@ import { Card, CardBody, CardHeader, Button, Input, Alert } from '@/src/componen
 import { apiClient } from '@/src/lib/api-client';
 import { CreateReclamanteRequest } from '@/src/types';
 import { ApiErrorHandler } from '@/src/lib/utils';
-import { Plus, Save, X, User, FileText, Phone } from 'lucide-react';
+import { Plus, Save, X, User, FileText, Phone, MessageSquare } from 'lucide-react';
 
 export default function NewReclamantePage() {
   const router = useRouter();
@@ -138,11 +138,11 @@ export default function NewReclamantePage() {
         {/* Header */}
         <div className="mb-12 animate-slide-up">
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
+            <div className="p-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg mb-2">
               <Plus size={40} className="text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2 pb-2">
                 Registrar Reclamante
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400">
@@ -168,7 +168,7 @@ export default function NewReclamantePage() {
           <CardHeader variant="gradient" color="purple">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg">
-                <User size={24} className="text-white" />
+                <MessageSquare size={24} className="text-white" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">Informações do Reclamante</h2>

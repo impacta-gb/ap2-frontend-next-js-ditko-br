@@ -158,14 +158,7 @@ export default function Footer() {
               </a>
             </div>
           </div>
-        </div>
-
-        {/* Bottom gradient accent */}
-        <div className="text-center pt-6 pb-4">
-          <p className="text-blue-300/40 text-xs">
-            Feito com <Heart size={12} className="inline text-red-400" /> para reunir pessoas
-          </p>
-        </div>
+        </div>        
       </div>
     </footer>
   );
