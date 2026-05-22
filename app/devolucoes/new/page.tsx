@@ -1,13 +1,117 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardBody, CardHeader, Button, Input, Textarea, Select, Alert, Loading } from '@/src/components';
+import { Card, CardBody, CardHeader, Button, Input, Textarea, Alert, Loading } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
-import { RotateCcw, Save, X, Calendar } from 'lucide-react';
+import { RotateCcw, Save, X, Calendar, Search } from 'lucide-react';
+
+type OptionItem = {
+  value: string;
+  label: string;
+};
+
+type SearchableSelectProps = {
+  label: string;
+  placeholder: string;
+  value: string;
+  options: OptionItem[];
+  error?: string;
+  onChange: (value: string) => void;
+};
+
+function SearchableSelect({ label, placeholder, value, options, error, onChange }: SearchableSelectProps) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
+
+  const selectedLabel = useMemo(
+    () => options.find((option) => option.value === value)?.label || '',
+    [options, value]
+  );
+
+  useEffect(() => {
+    setQuery(selectedLabel);
+  }, [selectedLabel]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  const filteredOptions = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return options;
+    return options.filter((option) => option.label.toLowerCase().includes(normalizedQuery));
+  }, [options, query]);
+
+  const handleSelect = (option: OptionItem) => {
+    onChange(option.value);
+    setQuery(option.label);
+    setOpen(false);
+  };
+
+  const handleInputChange = (nextValue: string) => {
+    setQuery(nextValue);
+    setOpen(Boolean(nextValue.trim()));
+    onChange('');
+  };
+
+  const handleBlur = () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      setOpen(false);
+      setQuery(selectedLabel);
+    }, 150);
+  };
+
+  return (
+    <div className="w-full relative">
+      <label className="block text-sm font-bold bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-200 dark:to-gray-100 bg-clip-text text-transparent mb-2">
+        {label}
+      </label>
+      <div className="relative">
+        <Input
+          value={query}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onFocus={() => setOpen(Boolean(query.trim()))}
+          onBlur={handleBlur}
+          placeholder={placeholder}
+          error={error}
+          icon={<Search size={20} />}
+        />
+
+        {open && filteredOptions.length > 0 && (
+          <div className="absolute z-20 mt-2 w-full max-h-72 overflow-auto rounded-2xl border-2 border-emerald-200 dark:border-teal-800 bg-white dark:bg-gray-800 shadow-2xl">
+            {filteredOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => handleSelect(option)}
+                className={`w-full text-left px-4 py-3 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-emerald-50 dark:hover:bg-teal-900/30 ${
+                  option.value === value ? 'bg-emerald-50 dark:bg-teal-900/20' : ''
+                }`}
+              >
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">{option.label}</div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {open && query.trim() && filteredOptions.length === 0 && (
+          <div className="absolute z-20 mt-2 w-full rounded-2xl border-2 border-emerald-200 dark:border-teal-800 bg-white dark:bg-gray-800 shadow-2xl px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+            Nenhum resultado encontrado.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function NewDevolutionPageContent() {
   const router = useRouter();
@@ -161,23 +265,18 @@ function NewDevolutionPageContent() {
   const itemsArray = extractItemsArray(items);
   const reclamantesArray = extractReclamantesArray(reclamantes);
 
-  const itemOptions = [
-    { value: '', label: 'Selecione um item' },
-    ...itemsArray
-      .filter((item: any) => item.status !== 'devolvido')
-      .map((item: any) => ({
-        value: item.id,
-        label: `${item.nome} - ${item.categoria}`,
-      })),
-  ];
+  const availableItems = itemsArray.filter((item: any) => item.status !== 'devolvido');
 
-  const reclamanteOptions = [
-    { value: '', label: 'Selecione um reclamante' },
-    ...reclamantesArray.map((rec: any) => ({
-      value: rec.id,
-      label: `${rec.nome} (${rec.documento})`,
-    })),
-  ];
+  const itemOptions = availableItems
+    .map((item: any) => ({
+      value: String(item.id),
+      label: `${item.nome} - ${item.categoria}`,
+    }));
+
+  const reclamanteOptions = reclamantesArray.map((rec: any) => ({
+    value: String(rec.id),
+    label: `${rec.nome} (${rec.documento})`,
+  }));
 
   if (loadingItems || loadingReclamantes) {
     return <Loading />;
@@ -187,9 +286,9 @@ function NewDevolutionPageContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25" style={{ animationDelay: '4s' }}></div>
       </div>
       <div className="max-w-2xl mx-auto relative z-10">
         <div className="mb-12 animate-slide-up">
@@ -249,7 +348,7 @@ function NewDevolutionPageContent() {
           <CardBody padding="lg">
             <form onSubmit={handleSubmit} className="space-y-7">
               {/* Info Alert if no items available */}
-              {itemOptions.length <= 1 && (
+              {itemOptions.length === 0 && (
                 <Alert
                   type="warning"
                   title="Nenhum item disponível"
@@ -260,22 +359,22 @@ function NewDevolutionPageContent() {
 
               {/* Row 1: Item and Reclamante */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Select
+                <SearchableSelect
                   label="Item a ser devolvido"
-                  name="item_id"
                   value={formData.item_id}
-                  onChange={handleChange}
+                  onChange={(nextValue) => setFormData((prev) => ({ ...prev, item_id: nextValue }))}
                   error={errors.item_id}
                   options={itemOptions}
+                  placeholder="Digite para buscar um item"
                 />
 
-                <Select
+                <SearchableSelect
                   label="Reclamante"
-                  name="reclamante_id"
                   value={formData.reclamante_id}
-                  onChange={handleChange}
+                  onChange={(nextValue) => setFormData((prev) => ({ ...prev, reclamante_id: nextValue }))}
                   error={errors.reclamante_id}
                   options={reclamanteOptions}
+                  placeholder="Digite para buscar um reclamante"
                 />
               </div>
 
@@ -305,7 +404,7 @@ function NewDevolutionPageContent() {
                   size="lg"
                   fullWidth
                   loading={submitting}
-                  disabled={submitting || itemOptions.length <= 1}
+                  disabled={submitting || itemOptions.length === 0}
                   icon={<Save size={20} />}
                 >
                   {submitting ? 'Salvando...' : 'Registrar Devolução'}

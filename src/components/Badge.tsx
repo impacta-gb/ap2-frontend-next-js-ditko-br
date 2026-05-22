@@ -38,7 +38,7 @@ export const Badge = ({
     lg: 'px-4 py-2 text-base'
   };
 
-  const animationClass = animated ? 'animate-pulse' : '';
+  const animationClass = animated ? '' : '';
 
   return (
     <span

@@ -18,7 +18,7 @@ export const Loading = ({ message = 'Carregando...' }: { message?: string }) => 
             <Loader2 className="text-blue-600 dark:text-blue-400 animate-spin" size={28} />
           </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-400 font-semibold animate-pulse text-lg">{message}</p>
+        <p className="text-gray-600 dark:text-gray-400 font-semibold text-lg">{message}</p>
       </div>
     </div>
   );
@@ -35,7 +35,7 @@ export const Skeleton = ({ className = '', count = 1, circle = false }: Skeleton
   const skeletonElements = Array.from({ length: count }).map((_, i) => (
     <div
       key={i}
-      className={`bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 ${baseClass} animate-pulse ${className}`}
+      className={`bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 ${baseClass} ${className}`}
       style={{
         animation: 'shimmer 2s infinite',
         backgroundSize: '200% 100%',
