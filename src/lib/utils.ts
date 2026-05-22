@@ -211,7 +211,7 @@ export const translateStatus = (status: string | undefined): string => {
     devolvido: "Devolvido",
     pendente: "Pendente",
   };
-  return translations[normalizedStatus] || status;
+  return String(translations[normalizedStatus] ?? status ?? 'Desconhecido');
 };
 
 /**
