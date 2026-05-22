@@ -143,26 +143,66 @@ export const phoneMask = (value: string): string => {
 };
 
 /**
+ * Normaliza status do backend para os valores do frontend
+ */
+export const normalizeItemStatus = (status: string | undefined): string => {
+  if (!status || typeof status !== 'string') {
+    return '';
+  }
+
+  const normalized = status.toLowerCase();
+  if (normalized === 'disponivel') {
+    return 'disponível';
+  }
+  if (normalized === 'em_analise' || normalized === 'em-analise') {
+    return 'pendente';
+  }
+
+  return normalized;
+};
+
+/**
+ * Converte status do frontend para o formato esperado pelo backend
+ */
+export const serializeItemStatus = (status: string | undefined): string | undefined => {
+  const normalizedStatus = normalizeItemStatus(status);
+
+  if (!normalizedStatus) {
+    return undefined;
+  }
+
+  if (normalizedStatus === 'pendente') {
+    return 'em_analise';
+  }
+
+  return normalizedStatus;
+};
+
+/**
  * Obtém a cor do badge de status
  */
 export const getStatusColor = (status: string | undefined): string => {
-  if (!status || typeof status !== 'string') {
+  const normalizedStatus = normalizeItemStatus(status);
+
+  if (!normalizedStatus) {
     return "bg-gray-100 text-gray-800";
   }
   
   const colors: Record<string, string> = {
     disponível: "bg-green-100 text-green-800",
     devolvido: "bg-blue-100 text-blue-800",
-    pendente: "bg-yellow-100 text-yellow-800",
+    pendente: "bg-orange-100 text-orange-800",
   };
-  return colors[status.toLowerCase()] || "bg-gray-100 text-gray-800";
+  return colors[normalizedStatus] || "bg-gray-100 text-gray-800";
 };
 
 /**
  * Traduz status para português
  */
 export const translateStatus = (status: string | undefined): string => {
-  if (!status || typeof status !== 'string') {
+  const normalizedStatus = normalizeItemStatus(status);
+
+  if (!normalizedStatus) {
     return 'Desconhecido';
   }
   
@@ -171,7 +211,7 @@ export const translateStatus = (status: string | undefined): string => {
     devolvido: "Devolvido",
     pendente: "Pendente",
   };
-  return translations[status.toLowerCase()] || status;
+  return translations[normalizedStatus] || status;
 };
 
 /**
