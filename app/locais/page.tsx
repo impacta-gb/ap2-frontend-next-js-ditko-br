@@ -197,7 +197,7 @@ export default function LocaisPage() {
           </div>
           <Link href="/locais/new">
             <Button variant="primary" size="lg" className="w-full sm:w-auto">
-              <RotateCcw size={20} />
+              <Plus size={20} />
               Registrar Local
             </Button>
           </Link>
@@ -284,7 +284,7 @@ export default function LocaisPage() {
               {/* Action button */}
               <Link href="/locais/new">
                 <Button variant="primary" size="lg" className="group">
-                  <RotateCcw size={22} />
+                  <Plus size={22} />
                   Registrar Local
                   <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 opacity-0 group-hover:opacity-20 transition-opacity" />
                 </Button>

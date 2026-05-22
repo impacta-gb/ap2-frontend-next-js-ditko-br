@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Input, Textarea, Alert } from '@/src/components';
 import { CreateLocalRequest } from '@/src/types';
-import { Plus, Save, X, Package } from 'lucide-react';
+import { Plus, Save, X, MapPin } from 'lucide-react';
 import { apiClient } from '@/src/lib/api-client';
 
 export default function NewLocalPage() {
@@ -118,11 +118,11 @@ export default function NewLocalPage() {
         {/* Header */}
         <div className="mb-12 animate-slide-up">
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
+            <div className="p-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg mb-2">
               <Plus size={40} className="text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2 pb-2">
                 Registrar Novo Local
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400">
@@ -148,7 +148,7 @@ export default function NewLocalPage() {
           <CardHeader variant="gradient" color="blue">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg">
-                <Package size={24} className="text-white" />
+                <MapPin size={24} className="text-white" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">Informações do Local</h2>
@@ -168,7 +168,7 @@ export default function NewLocalPage() {
                   onChange={handleChange}
                   error={errors.tipo}
                   placeholder="Ex: Avenida"
-                  icon={<Package size={20} />}
+                  icon={<MapPin size={20} />}
                 />
 
                 <Input

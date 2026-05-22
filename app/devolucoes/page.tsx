@@ -265,7 +265,7 @@ export default function DevolucoesPage() {
 
             <Link href="/devolucoes/new" className="w-full sm:w-auto">
               <Button variant="primary" size="lg" className="w-full sm:w-auto">
-                <RotateCcw size={20} />
+                <Plus size={20} />
                 Registrar Devolução
               </Button>
             </Link>

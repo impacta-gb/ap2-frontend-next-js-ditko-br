@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Input, Textarea, Alert, Loading } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
-import { RotateCcw, Save, X, Calendar, Search } from 'lucide-react';
+import { RotateCcw, Save, X, Calendar, Search, Plus } from 'lucide-react';
 
 type OptionItem = {
   value: string;
@@ -293,11 +293,11 @@ function NewDevolutionPageContent() {
       <div className="max-w-2xl mx-auto relative z-10">
         <div className="mb-12 animate-slide-up">
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-4 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl shadow-lg">
-              <RotateCcw size={40} className="text-white" />
+            <div className="p-4 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl shadow-lg mb-2">
+              <Plus size={40} className="text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400 mb-2">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400 mb-2 pb-2">
                 Registrar Devolução
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400">
