@@ -17,6 +17,7 @@ import {
   UpdateReclamanteRequest,
   PatchReclamanteRequest
 } from "../types";
+import { serializeItemStatus } from "./utils";
 
 const API_URLS = {
   ITEM: "/api/proxy/item",
@@ -182,16 +183,23 @@ class ApiClient {
   }
 
   async patchItem(id: string, data: PatchItemRequest): Promise<Item> {
+    const payload = {
+      ...data,
+      status: serializeItemStatus(data.status),
+    };
+
     return this.request(this.itemPath(`/${id}`), {
       method: "PATCH",
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
   }
 
   async updateItemStatus(id: string, status: string): Promise<Item> {
+    const normalizedStatus = serializeItemStatus(status);
+
     return this.request(this.itemPath(`/${id}`), {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status: normalizedStatus }),
     });
   }
 
@@ -325,7 +333,9 @@ class ApiClient {
   }
 
   // Reclamante endpoints
-  async getReclamantes(skip = 0, limit = 10): Promise<ApiListResponse<any>> {
+  async getReclamantes(page = 1, limit = 10): Promise<ApiListResponse<any>> {
+    const skip = Math.max(0, (page - 1) * limit);
+
     return this.request(
       `${API_URLS.RECLAMANTE}/api/v1/reclamantes/?skip=${skip}&limit=${limit}`,
       { method: "GET" }

@@ -1,12 +1,127 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardBody, CardHeader, Button, Input, Textarea, Select, Alert, Loading } from '@/src/components';
+import { Card, CardBody, CardHeader, Button, Input, Textarea, Alert, Loading } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
-import { Plus, Save, X, Package } from 'lucide-react';
+import { Plus, Save, X, Package, Search } from 'lucide-react';
+
+type OptionItem = {
+  value: string;
+  label: string;
+};
+
+type SearchableSelectProps = {
+  label: string;
+  placeholder: string;
+  value: string;
+  options: OptionItem[];
+  error?: string;
+  onChange: (value: string) => void;
+};
+
+function SearchableSelect({
+  label,
+  placeholder,
+  value,
+  options,
+  error,
+  onChange,
+}: SearchableSelectProps) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
+
+  const selectedLabel = useMemo(
+    () => options.find((option) => option.value === value)?.label || '',
+    [options, value]
+  );
+
+  useEffect(() => {
+    setQuery(selectedLabel);
+  }, [selectedLabel]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  const filteredOptions = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return options;
+    return options.filter((option) => option.label.toLowerCase().includes(normalizedQuery));
+  }, [options, query]);
+
+  const handleSelect = (option: OptionItem) => {
+    onChange(option.value);
+    setQuery(option.label);
+    setOpen(false);
+  };
+
+  const handleInputChange = (nextValue: string) => {
+    setQuery(nextValue);
+    setOpen(Boolean(nextValue.trim()));
+    onChange('');
+  };
+
+  const handleBlur = () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      setOpen(false);
+      setQuery(selectedLabel);
+    }, 150);
+  };
+
+  return (
+    <div className="w-full relative">
+      <label className="block text-sm font-bold bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-200 dark:to-gray-100 bg-clip-text text-transparent mb-2">
+        {label}
+      </label>
+      <div className="relative">
+        <div className="relative">
+          <Input
+            value={query}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onFocus={() => setOpen(Boolean(query.trim()))}
+            onBlur={handleBlur}
+            placeholder={placeholder}
+            helperText={selectedLabel ? `Selecionado: ${selectedLabel}` : undefined}
+            error={error}
+            icon={<Search size={20} />}
+          />
+        </div>
+
+        {open && filteredOptions.length > 0 && (
+          <div className="absolute z-20 mt-2 w-full max-h-72 overflow-auto rounded-2xl border-2 border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-800 shadow-2xl">
+            {filteredOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => handleSelect(option)}
+                className={`w-full text-left px-4 py-3 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-blue-50 dark:hover:bg-blue-900/30 ${
+                  option.value === value ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                }`}
+              >
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">{option.label}</div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {open && query.trim() && filteredOptions.length === 0 && (
+          <div className="absolute z-20 mt-2 w-full rounded-2xl border-2 border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-800 shadow-2xl px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+            Nenhum resultado encontrado.
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
 
 export default function NewItemPage() {
   const router = useRouter();
@@ -165,21 +280,15 @@ export default function NewItemPage() {
   // Mostrar apenas responsáveis ativos no select
   const responsaveisAtivos = responsaveisArray.filter((r: any) => r && typeof r === 'object' ? Boolean((r as any).ativo) : false);
 
-  const localOptions = [
-    { value: '', label: 'Selecione um local' },
-    ...locaisArray.map((local: any) => ({
-      value: local.id,
-      label: local.descricao,
-    })),
-  ];
+  const localOptions = locaisArray.map((local: any) => ({
+    value: String(local.id),
+    label: `${local.tipo} - ${local.descricao}`,
+  }));
 
-  const responsavelOptions = [
-    { value: '', label: 'Selecione um responsável' },
-    ...responsaveisAtivos.map((resp: any) => ({
-      value: resp.id,
-      label: `${resp.nome} - ${resp.cargo}`,
-    })),
-  ];
+  const responsavelOptions = responsaveisAtivos.map((resp: any) => ({
+    value: String(resp.id),
+    label: `${resp.nome} - ${resp.cargo}`,
+  }));
 
   if (loadingLocais || loadingResponsaveis) {
     return <Loading />;
@@ -189,9 +298,9 @@ export default function NewItemPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25" style={{ animationDelay: '4s' }}></div>
       </div>
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
@@ -284,22 +393,22 @@ export default function NewItemPage() {
 
               {/* Row 4: Seleções */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Select
+                <SearchableSelect
                   label="Local onde foi encontrado"
-                  name="local_id"
+                  placeholder="Digite para buscar um local"
                   value={formData.local_id}
-                  onChange={handleChange}
-                  error={errors.local_id}
                   options={localOptions}
+                  error={errors.local_id}
+                  onChange={(nextValue) => setFormData((prev) => ({ ...prev, local_id: nextValue }))}
                 />
 
-                <Select
+                <SearchableSelect
                   label="Responsável pelo registro"
-                  name="responsavel_id"
+                  placeholder="Digite para buscar um responsável"
                   value={formData.responsavel_id}
-                  onChange={handleChange}
-                  error={errors.responsavel_id}
                   options={responsavelOptions}
+                  error={errors.responsavel_id}
+                  onChange={(nextValue) => setFormData((prev) => ({ ...prev, responsavel_id: nextValue }))}
                 />
               </div>
 

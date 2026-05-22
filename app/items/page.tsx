@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { Card, CardBody, CardHeader, Button, Badge, Loading, Alert } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
-import { translateStatus, formatDate, formatDateTime } from '@/src/lib/utils';
-import { Plus, MapPin, Calendar, Tag, Search, Eye, Pencil, Trash2, Users, Clock } from 'lucide-react';
+import { translateStatus, formatDate, formatDateTime, normalizeItemStatus } from '@/src/lib/utils';
+import { Plus, MapPin, Calendar, Tag, Search, Eye, Pencil, Trash2, Users } from 'lucide-react';
 
 export default function ItemsPage() {
   const [page, setPage] = useState(1);
@@ -14,6 +14,61 @@ export default function ItemsPage() {
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; title: string; message: string } | null>(null);
   const [locaisMapa, setLocaisMapa] = useState<Record<string, any>>({});
   const [responsaveisMapa, setResponsaveisMapa] = useState<Record<string, any>>({});
+
+  const extractArray = (obj: Record<string, unknown> | unknown): any[] | undefined => {
+    if (Array.isArray(obj)) return obj as any[];
+    if (!obj || typeof obj !== 'object') return undefined;
+
+    const o = obj as Record<string, unknown>;
+    const candidates = [o.data, o.items, o.results, o.locais, o.responsaveis, o.locals];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate as any[];
+    }
+
+    if (o.data && typeof o.data === 'object' && !Array.isArray(o.data)) {
+      return extractArray(o.data as Record<string, unknown>);
+    }
+
+    const resultsObj = (o.results as any) ?? undefined;
+    if (resultsObj && typeof resultsObj === 'object') {
+      if (Array.isArray(resultsObj.data)) return resultsObj.data as any[];
+      if (Array.isArray(resultsObj.items)) return resultsObj.items as any[];
+    }
+
+    return undefined;
+  };
+
+  const resolveLinkedEntity = (
+    item: Record<string, any>,
+    entityKey: 'local' | 'responsavel',
+    fallbackMap: Record<string, any>
+  ) => {
+    const direct = item?.[entityKey];
+    if (direct && typeof direct === 'object') return direct;
+
+    const altKeys = [`${entityKey}_data`, `${entityKey}Data`, `${entityKey}Info`];
+    for (const key of altKeys) {
+      const candidate = item?.[key];
+      if (candidate && typeof candidate === 'object') return candidate;
+    }
+
+    const idKey = `${entityKey}_id`;
+    const linkedId = item?.[idKey];
+    if (linkedId !== undefined && linkedId !== null && linkedId !== '') {
+      const fromMap = fallbackMap[String(linkedId)];
+      if (fromMap) return fromMap;
+    }
+
+    return null;
+  };
+
+  const resolveDateValue = (...values: Array<string | null | undefined>) => {
+    for (const value of values) {
+      if (typeof value === 'string' && value.trim() !== '') return value;
+    }
+    return '';
+  };
 
   // Função auxiliar para retornar data de criação se campo estiver vazio
   const getDisplayValue = (value: string | null | undefined, fallbackDate: string | null | undefined): string => {
@@ -25,22 +80,6 @@ export default function ItemsPage() {
   const { data: items, loading, error, refetch } = useFetch(
     async () => {
       const response = await apiClient.getItems(page, 10);
-
-      // Normalizar resposta para garantir compatibilidade com diferentes formatos
-      const extractArray = (obj: Record<string, unknown> | unknown): any[] | undefined => {
-        if (Array.isArray(obj)) return obj as any[];
-        if (!obj || typeof obj !== 'object') return undefined;
-        const o = obj as Record<string, unknown>;
-        if (Array.isArray(o.data)) return o.data as any[];
-        if (Array.isArray(o.items)) return o.items as any[];
-        if (Array.isArray(o.results)) return o.results as any[];
-        const resultsObj = (o.results as any) ?? undefined;
-        if (Array.isArray(resultsObj?.data)) return resultsObj.data as any[];
-        if (o.data && typeof o.data === 'object' && !Array.isArray(o.data)) {
-          return extractArray(o.data as Record<string, unknown>);
-        }
-        return undefined;
-      };
 
       const itemsArray = extractArray(response) || [];
 
@@ -85,14 +124,6 @@ export default function ItemsPage() {
   // Carregar dados dos locais para mapeamento
   useFetch(async () => {
     const response = await apiClient.getLocais(1, 1000);
-    const extractArray = (obj: Record<string, unknown> | unknown): any[] | undefined => {
-      if (Array.isArray(obj)) return obj as any[];
-      if (!obj || typeof obj !== 'object') return undefined;
-      const o = obj as Record<string, unknown>;
-      if (Array.isArray(o.data)) return o.data as any[];
-      if (Array.isArray(o.items)) return o.items as any[];
-      return undefined;
-    };
     const locais = extractArray(response) || [];
     const mapa: Record<string, any> = {};
     locais.forEach((local: any) => {
@@ -105,14 +136,6 @@ export default function ItemsPage() {
   // Carregar dados dos responsáveis para mapeamento
   useFetch(async () => {
     const response = await apiClient.getResponsaveis(1, 1000);
-    const extractArray = (obj: Record<string, unknown> | unknown): any[] | undefined => {
-      if (Array.isArray(obj)) return obj as any[];
-      if (!obj || typeof obj !== 'object') return undefined;
-      const o = obj as Record<string, unknown>;
-      if (Array.isArray(o.data)) return o.data as any[];
-      if (Array.isArray(o.items)) return o.items as any[];
-      return undefined;
-    };
     const responsaveis = extractArray(response) || [];
     const mapa: Record<string, any> = {};
     responsaveis.forEach((resp: any) => {
@@ -165,11 +188,7 @@ export default function ItemsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 right-1/4 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
       <div className="max-w-7xl mx-auto relative z-10">
         {alert && (
@@ -207,6 +226,11 @@ export default function ItemsPage() {
         {paginatedItems && paginatedItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {paginatedItems.map((item: any, index: number) => (
+              (() => {
+                const normalizedStatus = normalizeItemStatus(item.status);
+                const isDevolvido = normalizedStatus === 'devolvido';
+
+                return (
               <Card
                 key={item.id}
                 className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group overflow-hidden animate-scale-in border-2 border-transparent hover:border-blue-300 dark:hover:border-blue-600"
@@ -226,9 +250,9 @@ export default function ItemsPage() {
                     <Badge
                       label={translateStatus(item.status)}
                       variant={
-                        item.status === 'disponível'
+                        normalizedStatus === 'disponível'
                           ? 'success'
-                          : item.status === 'devolvido'
+                          : normalizedStatus === 'devolvido'
                           ? 'info'
                           : 'warning'
                       }
@@ -242,23 +266,33 @@ export default function ItemsPage() {
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
                     <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
                       <MapPin size={14} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                      <span className="font-medium truncate text-xs">
-                        {item.local?.tipo || locaisMapa[item.local_id]?.tipo || getDisplayValue('', item.criado_em)}
-                      </span>
+                      <div className="min-w-0">
+                        <span className="font-medium truncate text-xs block">
+                          {resolveLinkedEntity(item, 'local', locaisMapa)?.tipo || resolveLinkedEntity(item, 'local', locaisMapa)?.descricao || 'Local não informado'}
+                        </span>
+                        {(resolveLinkedEntity(item, 'local', locaisMapa)?.bairro || resolveLinkedEntity(item, 'local', locaisMapa)?.descricao) && (
+                          <span className="text-[11px] text-gray-500 dark:text-gray-500 block truncate">
+                            {resolveLinkedEntity(item, 'local', locaisMapa)?.bairro || resolveLinkedEntity(item, 'local', locaisMapa)?.descricao}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
                       <Calendar size={14} className="text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                      <span className="font-medium text-xs">{formatDate(item.data_encontro || '') || getDisplayValue('', item.criado_em)}</span>
+                      <span className="font-medium text-xs">{formatDate(resolveDateValue(item.data_encontro, item.dataEncontro, item.encontro_em))}</span>
                     </div>
                     <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
                       <Users size={14} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                      <span className="font-medium truncate text-xs">
-                        {item.responsavel?.nome || responsaveisMapa[item.responsavel_id]?.nome || getDisplayValue('', item.criado_em)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
-                      <Clock size={14} className="text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                      <span className="font-medium text-xs">{formatDate(item.criado_em || '')}</span>
+                      <div className="min-w-0">
+                        <span className="font-medium truncate text-xs block">
+                          {resolveLinkedEntity(item, 'responsavel', responsaveisMapa)?.nome || resolveLinkedEntity(item, 'responsavel', responsaveisMapa)?.cargo || 'Responsável não informado'}
+                        </span>
+                        {(resolveLinkedEntity(item, 'responsavel', responsaveisMapa)?.cargo || resolveLinkedEntity(item, 'responsavel', responsaveisMapa)?.telefone) && (
+                          <span className="text-[11px] text-gray-500 dark:text-gray-500 block truncate">
+                            {resolveLinkedEntity(item, 'responsavel', responsaveisMapa)?.cargo || resolveLinkedEntity(item, 'responsavel', responsaveisMapa)?.telefone}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -278,15 +312,18 @@ export default function ItemsPage() {
                       size="sm"
                       fullWidth
                       loading={actionLoadingId === item.id}
+                      disabled={isDevolvido}
                       onClick={() => handleDelete(item)}
                       icon={<Trash2 size={16} />}
                       className="col-span-2"
                     >
-                      Excluir
+                      {isDevolvido ? 'Exclusão indisponível' : 'Excluir'}
                     </Button>
                   </div>
                 </CardBody>
               </Card>
+                );
+              })()
             ))}
           </div>
         ) : (
@@ -299,7 +336,7 @@ export default function ItemsPage() {
             <div className="relative z-10 flex flex-col items-center justify-center text-center">
               {/* Icon background with animation */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-400 rounded-2xl blur-xl opacity-20 animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-400 rounded-2xl blur-xl opacity-20" />
                 <div className="relative inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
                   <Search size={56} className="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text" />
                 </div>

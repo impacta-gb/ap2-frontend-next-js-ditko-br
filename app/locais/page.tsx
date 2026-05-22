@@ -24,11 +24,34 @@ const extractLocalArray = (obj: Record<string, unknown>): Local[] | undefined =>
   if (Array.isArray(obj.results)) return obj.results as Local[];
   if (Array.isArray(obj.data)) return obj.data as Local[];
 
+  const resultsObj = obj.results as Record<string, unknown> | undefined;
+  if (resultsObj) {
+    if (Array.isArray(resultsObj.data)) return resultsObj.data as Local[];
+    if (Array.isArray(resultsObj.items)) return resultsObj.items as Local[];
+  }
+
   if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
     return extractLocalArray(obj.data as Record<string, unknown>);
   }
 
   return undefined;
+};
+
+const resolveLocalData = (payload: unknown): Local | null => {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return null;
+  }
+
+  const obj = payload as Record<string, unknown>;
+  if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) {
+    return obj.data as Local;
+  }
+
+  if (obj.local && typeof obj.local === 'object' && !Array.isArray(obj.local)) {
+    return obj.local as Local;
+  }
+
+  return obj as unknown as Local;
 };
 
 const normalizeLocalArray = (payload: unknown): Local[] => {
@@ -86,6 +109,13 @@ export default function LocaisPage() {
       return value;
     }
     return fallbackDate ? formatDate(fallbackDate) : 'Não informado';
+  };
+
+  const resolveDateValue = (...values: Array<string | null | undefined>) => {
+    for (const value of values) {
+      if (typeof value === 'string' && value.trim() !== '') return value;
+    }
+    return '';
   };
 
   const { data: locais, loading, error, refetch } = useFetch<LocalListState>(
@@ -148,9 +178,6 @@ export default function LocaisPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 dark:from-slate-950 dark:via-purple-950 dark:to-blue-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 right-1/4 w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
@@ -187,20 +214,20 @@ export default function LocaisPage() {
               >
                 <CardHeader className="pb-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                    {loc.tipo}
+                    {loc.tipo || loc.nome || 'Local sem nome'}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {loc.bairro}
+                    {loc.bairro || loc.descricao || 'Bairro não informado'}
                   </p>
                 </CardHeader>
                 <CardBody>
                   <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4">
-                    {loc.descricao}
+                    {loc.descricao || loc.observacao || 'Descrição não informada'}
                   </p>
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 border-t pt-4">
                     <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
                       <Clock size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                      <span className="font-medium text-xs">{getDisplayValue('', loc.criado_em)}</span>
+                      <span className="font-medium text-xs">{formatDate(resolveDateValue(loc.criado_em, loc.created_at, loc.createdAt))}</span>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -240,7 +267,7 @@ export default function LocaisPage() {
             <div className="relative z-10 flex flex-col items-center justify-center text-center">
               {/* Icon background with animation */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-green-400 rounded-2xl blur-xl opacity-20 animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-green-400 rounded-2xl blur-xl opacity-20" />
                 <div className="relative inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/40 dark:to-green-900/40 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
                   <RotateCcw size={56} className="text-transparent bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text" />
                 </div>

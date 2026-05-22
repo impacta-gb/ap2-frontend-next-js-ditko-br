@@ -12,7 +12,6 @@ export const Navbar = () => {
   const navItems = [
     { href: '/', label: 'Início', icon: Home },
     { href: '/items', label: 'Itens', icon: Package },
-    { href: '/items/new', label: 'Registrar', icon: Plus },
     { href: '/devolucoes', label: 'Devoluções', icon: RotateCcw },
     { href: '/responsaveis', label: 'Responsáveis', icon: Users },
     { href: '/locais', label: 'Locais', icon: MapPin },
@@ -24,9 +23,6 @@ export const Navbar = () => {
       {/* Premium gradient background */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-950/50 via-slate-950/50 to-purple-950/50 pointer-events-none"></div>
       
-      {/* Animated glow effect */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-32 bg-gradient-to-b from-blue-500/20 to-transparent rounded-full filter blur-3xl opacity-50 pointer-events-none animate-pulse"></div>
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between items-center h-20">
           {/* Logo - Premium - Left Aligned */}
@@ -35,9 +31,6 @@ export const Navbar = () => {
             className="flex items-center gap-3 group transition-all duration-300 hover:scale-105 flex-shrink-0"
           >
             <div className="relative">
-              {/* Glow background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-600 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-all duration-300 animate-pulse"></div>
-              
               {/* Icon container */}
               <div className="relative p-2.5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-2xl group-hover:shadow-3xl group-hover:scale-110 transition-all duration-300">
                 <Search size={28} className="text-white" />
@@ -77,7 +70,7 @@ export const Navbar = () => {
                   
                   {/* Bottom indicator */}
                   {isActive(href) && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 animate-pulse"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400"></div>
                   )}
                 </Link>
               </li>
@@ -105,7 +98,6 @@ export const Navbar = () => {
         </div>
       </div>
 
-      {/* Animated gradient line */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
     </nav>
   );

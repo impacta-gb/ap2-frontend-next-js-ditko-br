@@ -8,12 +8,7 @@ export default function Footer() {
 
   return (
     <footer className="relative mt-32 border-t border-blue-500/20 backdrop-blur-xl bg-slate-950/50">
-      {/* Premium decorative elements */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl opacity-10 animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl opacity-10 animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 py-16">
@@ -21,7 +16,6 @@ export default function Footer() {
           <div className="space-y-6">
             <div className="flex items-center gap-3 group transition-all duration-300 hover:scale-105">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-600 rounded-xl blur-lg opacity-60 group-hover:opacity-100 transition-opacity animate-pulse"></div>
                 <div className="relative p-2.5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-xl">
                   <Heart size={24} className="text-white" />
                 </div>
@@ -169,7 +163,7 @@ export default function Footer() {
         {/* Bottom gradient accent */}
         <div className="text-center pt-6 pb-4">
           <p className="text-blue-300/40 text-xs">
-            Feito com <Heart size={12} className="inline text-red-400 animate-pulse" /> para reunir pessoas
+            Feito com <Heart size={12} className="inline text-red-400" /> para reunir pessoas
           </p>
         </div>
       </div>

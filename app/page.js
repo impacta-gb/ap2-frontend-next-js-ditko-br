@@ -91,8 +91,8 @@ export default function Home() {
         const totalResponsaveis = extractTotal(responsaveisResponse);
 
         // Calcular taxa de satisfação: (devoluções / reclamantes) * 100
-        const taxaSatisfacao = totalReclamantes > 0 
-          ? Math.round((totalDevolucoes / totalReclamantes) * 100)
+        const taxaSatisfacao = totalItems > 0 
+          ? Math.round((totalDevolucoes / totalItems) * 100)
           : 0;
 
         setStats([
@@ -184,13 +184,6 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Premium animated background with gradient mesh */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Main gradient blobs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-pulse" />
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl opacity-15 animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-1/3 left-1/3 w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-3xl opacity-10 animate-pulse" style={{ animationDelay: '4s' }} />
-        <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl opacity-15 animate-pulse" style={{ animationDelay: '3s' }} />
-        
-        {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-purple-500/5" />
       </div>
 
@@ -200,7 +193,7 @@ export default function Home() {
           {/* Premium floating icon - Centered */}
           <div className="flex items-center justify-center mb-12">
             <div className="relative w-40 h-40 flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-3xl blur-3xl opacity-75 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-3xl blur-3xl opacity-75" />
               <div className="relative inline-flex items-center justify-center w-40 h-40 bg-gradient-to-br from-blue-600 to-purple-700 rounded-3xl shadow-2xl transform hover:scale-110 transition-all duration-300 group cursor-pointer hover:shadow-3xl">
                 <Search size={80} className="text-white group-hover:animate-bounce" />
               </div>
@@ -343,7 +336,7 @@ export default function Home() {
               {
                 icon: <Shield size={40} className="text-blue-300" />,
                 title: 'Segurança Premium',
-                description: 'Seus dados são protegidos com criptografia de nível militar e as melhores práticas de segurança digital.',
+                description: 'Seus dados são protegidos seguindo as melhores práticas de segurança digital.',
                 color: 'from-blue-500 to-blue-600',
                 bgColor: 'bg-blue-950/30',
               },
@@ -357,7 +350,7 @@ export default function Home() {
               {
                 icon: <TrendingUp size={40} className="text-cyan-300" />,
                 title: 'Taxa de Sucesso',
-                description: 'Milhares de pessoas já recuperaram seus itens. Taxa de satisfação acima de 95%.',
+                description: 'Alta taxa de sucesso em encontrar itens perdidos.',
                 color: 'from-cyan-500 to-cyan-600',
                 bgColor: 'bg-cyan-950/30',
               },
@@ -391,26 +384,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA Footer - Premium */}
-        <div className="text-center mb-20 animate-slide-up relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-blue-600/10 rounded-3xl blur-3xl" />
-          <div className="relative py-16 px-8 rounded-3xl border border-blue-500/30 backdrop-blur-sm bg-slate-900/40">
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-              Comece Agora
-            </h2>
-            <p className="text-blue-200/80 text-lg mb-8 max-w-2xl mx-auto">
-              Não deixe seus objetos perdidos! Registre hoje e aumente as chances de recuperá-los.
-            </p>
-            <Link
-              href="/items/new"
-              className="inline-flex items-center justify-center px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg rounded-2xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 hover:scale-105 border border-blue-400/30"
-            >
-              <Plus size={28} className="mr-3 group-hover:animate-bounce" />
-              Registrar Meu Primeiro Item
-              <ArrowRight size={28} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   );

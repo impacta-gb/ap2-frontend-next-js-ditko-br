@@ -57,7 +57,7 @@ export const Stats = ({
   bgColor,
 }: StatsProps) => {
   const colors = colorMap[color];
-  const animationClass = animated ? 'animate-float' : '';
+  const animationClass = '';
 
   return (
     <div className={`relative overflow-hidden rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-3 group ${animationClass} ${bgColor || colors.bg} border border-gray-200/50 dark:border-gray-700/50 hover:border-blue-500/50`}>

@@ -7,7 +7,7 @@ import { Alert, Button, Card, CardBody, CardHeader, Input, Loading } from '@/src
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
 import { formatDateTime, formatPhone } from '@/src/lib/utils';
-import { ArrowLeft, Pencil, Power, Save, Trash2, User } from 'lucide-react';
+import { ArrowLeft, Pencil, Power, Save, Trash2, User, Phone, Calendar, Info } from 'lucide-react';
 
 export default function ResponsavelDetailPage() {
   const params = useParams<{ id: string }>();
@@ -106,8 +106,13 @@ export default function ResponsavelDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-10 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 py-10 px-4 relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <div className="max-w-4xl mx-auto relative z-10 space-y-6">
         {alert && (
           <Alert
             type={alert.type}
@@ -146,29 +151,64 @@ export default function ResponsavelDetailPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <User size={24} className="text-blue-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{responsavel.nome}</h1>
+              <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
+                <User size={28} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white truncate">{responsavel.nome}</h1>
                 <p className="text-gray-600 dark:text-gray-300">Detalhes do responsável</p>
               </div>
             </div>
           </CardHeader>
-          <CardBody className="space-y-2">
-            <p className="text-gray-700 dark:text-gray-200"><strong>Cargo:</strong> {responsavel.cargo || 'Não informado'}</p>
-            <p className="text-gray-700 dark:text-gray-200"><strong>Telefone:</strong> {formatPhone(responsavel.telefone)}</p>
-            <p className="text-gray-700 dark:text-gray-200"><strong>Status:</strong> {responsavel.ativo ? 'Ativo' : 'Inativo'}</p>
-            {hasCreatedAt && (
-              <p className="text-gray-500 dark:text-gray-400 text-sm"><strong>Criado em:</strong> {formatDateTime(responsavel.criado_em)}</p>
-            )}
-            {hasUpdatedAt && (
-              <p className="text-gray-500 dark:text-gray-400 text-sm"><strong>Atualizado em:</strong> {formatDateTime(responsavel.atualizado_em)}</p>
-            )}
+          <CardBody className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {responsavel.cargo && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2"><Info size={16} /> Cargo</p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{responsavel.cargo}</p>
+                </div>
+              )}
+
+              {responsavel.telefone && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2"><Phone size={16} /> Telefone</p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatPhone(responsavel.telefone)}</p>
+                </div>
+              )}
+
+              {responsavel.criado_em && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2"><Calendar size={16} /> Criado em</p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatDateTime(responsavel.criado_em)}</p>
+                </div>
+              )}
+
+              {responsavel.atualizado_em && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2"><Calendar size={16} /> Atualizado em</p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatDateTime(responsavel.atualizado_em)}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2"><Power size={16} /> Status</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">{responsavel.ativo ? 'Ativo' : 'Inativo'}</p>
+            </div>
           </CardBody>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Atualização Parcial</h2>
+        <Card hover gradient className="shadow-2xl border-2 border-gradient-to-r from-blue-200 to-purple-200 dark:border-purple-700/50">
+          <CardHeader variant="gradient" color="blue">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Save size={20} className="text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Atualização Parcial</h2>
+                <p className="text-blue-100 text-sm">Altere campos e envie atualização parcial</p>
+              </div>
+            </div>
           </CardHeader>
           <CardBody className="space-y-4">
             <Input
