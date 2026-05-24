@@ -96,17 +96,16 @@ Crie o arquivo `.env.local`:
 ```env
 NEXT_PUBLIC_APP_NAME=Sistema de Achados e Perdidos
 NEXT_PUBLIC_ENV=local
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
 Este sistema utiliza arquitetura separada por serviços. Configure os endpoints por domínio:
 
 ```env
-NEXT_PUBLIC_API_ITEM_URL=http://localhost:8001
-NEXT_PUBLIC_API_LOCAL_URL=http://localhost:8002
-NEXT_PUBLIC_API_RESPONSAVEL_URL=http://localhost:8003
-NEXT_PUBLIC_API_DEVOLUCAO_URL=http://localhost:8004
-NEXT_PUBLIC_API_RECLAMANTE_URL=http://localhost:8005
+NEXT_PUBLIC_API_ITEM_URL=http://localhost:5000
+NEXT_PUBLIC_API_LOCAL_URL=http://localhost:5001
+NEXT_PUBLIC_API_RESPONSAVEL_URL=http://localhost:5002
+NEXT_PUBLIC_API_DEVOLUCAO_URL=http://localhost:5003
+NEXT_PUBLIC_API_RECLAMANTE_URL=http://localhost:5004
 ```
 
 Execute em desenvolvimento:
