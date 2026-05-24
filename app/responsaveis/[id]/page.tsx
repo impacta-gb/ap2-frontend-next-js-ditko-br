@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Alert, Button, Card, CardBody, CardHeader, Input, Loading } from '@/src/components';
@@ -18,6 +18,21 @@ export default function ResponsavelDetailPage() {
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; title: string; message: string } | null>(null);
 
   const { data: responsavel, loading, error, refetch } = useFetch(() => apiClient.getResponsavelById(id), [id]);
+
+  useEffect(() => {
+    if (!responsavel) return;
+
+    let candidate: any = responsavel;
+    if (responsavel && typeof responsavel === 'object' && !Array.isArray(responsavel)) {
+      const obj = responsavel as unknown as Record<string, unknown>;
+      candidate = obj.data ?? obj.responsavel ?? obj;
+    }
+
+    setPatchData({
+      cargo: String(candidate?.cargo ?? ''),
+      telefone: String(candidate?.telefone ?? ''),
+    });
+  }, [responsavel]);
 
   const hasCreatedAt = Boolean(responsavel?.criado_em);
   const hasUpdatedAt = Boolean(responsavel?.atualizado_em);
@@ -216,12 +231,14 @@ export default function ResponsavelDetailPage() {
               value={patchData.cargo}
               onChange={(e) => setPatchData((prev) => ({ ...prev, cargo: e.target.value }))}
               placeholder="Ex: Supervisor"
+              helperText="Deixe em branco para manter o cargo atual."
             />
             <Input
               label="Novo telefone (opcional)"
               value={patchData.telefone}
               onChange={(e) => setPatchData((prev) => ({ ...prev, telefone: e.target.value }))}
               placeholder="Ex: (11) 98888-7777"
+              helperText="Deixe em branco para manter o telefone atual."
             />
             <Button variant="primary" icon={<Save size={18} />} onClick={handlePatch} loading={busy}>
               Atualizar parcialmente
