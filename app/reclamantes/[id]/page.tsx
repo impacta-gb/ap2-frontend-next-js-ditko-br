@@ -1,14 +1,14 @@
 'use client';
 
 import { useMemo, useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Alert, Button, Card, CardBody, CardHeader, Loading, Input } from '@/src/components';
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
 import { formatDateTime, formatPhone, ApiErrorHandler } from '@/src/lib/utils';
 import { Reclamante } from '@/src/types';
-import { ArrowLeft, User, FileText, Phone, Save, Calendar, Info } from 'lucide-react';
+import { ArrowLeft, User, FileText, Phone, Save, Calendar, Info, Pencil, Trash2 } from 'lucide-react';
 
 const extractReclamante = (payload: unknown): Reclamante | null => {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -27,9 +27,11 @@ const extractReclamante = (payload: unknown): Reclamante | null => {
 
 export default function ReclamanteDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = String(params?.id || '');
   const { data, loading, error, refetch } = useFetch(() => apiClient.getReclamanteById(id), [id]);
   const reclamante = useMemo(() => extractReclamante(data), [data]);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const alertTimerRef = useRef<number | null>(null);
   const [submitAlert, setSubmitAlert] = useState<null | { type: 'success' | 'error'; title: string; message: string }>(null);
@@ -128,6 +130,29 @@ export default function ReclamanteDetailPage() {
           <Link href="/reclamantes">
             <Button variant="outline" icon={<ArrowLeft size={18} />}>Voltar</Button>
           </Link>
+          <Link href={`/reclamantes/${id}/edit`}>
+            <Button variant="secondary" icon={<Pencil size={18} />}>Editar</Button>
+          </Link>
+          <Button
+            variant="danger"
+            icon={<Trash2 size={18} />}
+            loading={actionLoading}
+            onClick={async () => {
+              const confirmou = window.confirm('Deseja realmente excluir este reclamante?');
+              if (!confirmou) return;
+              try {
+                setActionLoading(true);
+                await apiClient.deleteReclamante(id);
+                setTimeout(() => router.push('/reclamantes'), 500);
+              } catch (err) {
+                showAlert({ type: 'error', title: 'Erro ao excluir', message: ApiErrorHandler.handle(err) });
+              } finally {
+                setActionLoading(false);
+              }
+            }}
+          >
+            Excluir
+          </Button>
         </div>
 
         <Card>
@@ -190,16 +215,13 @@ export default function ReclamanteDetailPage() {
           </CardHeader>
           <CardBody className="space-y-4">
             <form onSubmit={handlePatch} className="space-y-4">
-              <Input label="Nome" name="nome" value={formData.nome} onChange={handleChange} error={errors.nome} icon={<User size={16} />} />
-              <Input label="Documento" name="documento" value={formData.documento} onChange={handleChange} error={errors.documento} icon={<FileText size={16} />} />
-              <Input label="Telefone" name="telefone" value={formData.telefone} onChange={handleChange} error={errors.telefone} icon={<Phone size={16} />} />
+              <Input label="Nome" name="nome" value={formData.nome} onChange={handleChange} error={errors.nome} icon={<User size={16} />} helperText="Deixe em branco para manter o nome atual." />
+              <Input label="Documento" name="documento" value={formData.documento} onChange={handleChange} error={errors.documento} icon={<FileText size={16} />} helperText="Deixe em branco para manter o documento atual." />
+              <Input label="Telefone" name="telefone" value={formData.telefone} onChange={handleChange} error={errors.telefone} icon={<Phone size={16} />} helperText="Deixe em branco para manter o telefone atual." />
 
-              <div className="flex gap-3 justify-end">
-                <Button variant="secondary" onClick={() => setFormData({ nome: reclamante.nome || '', documento: reclamante.documento || '', telefone: reclamante.telefone || '' })}>
-                  Resetar
-                </Button>
+              <div className="flex gap-3 justify-start">
                 <Button type="submit" variant="primary" loading={submitting} disabled={submitting} icon={<Save size={16} />}>
-                  {submitting ? 'Salvando...' : 'Salvar alterações'}
+                  {submitting ? 'Atualizando...' : 'Atualizar parcialmente'}
                 </Button>
               </div>
             </form>

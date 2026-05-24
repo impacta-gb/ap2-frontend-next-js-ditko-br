@@ -7,7 +7,7 @@ import { Card, CardBody, CardHeader, Button, Input, Alert, Loading } from '@/src
 import { useFetch } from '@/src/hooks/useApi';
 import { apiClient } from '@/src/lib/api-client';
 import { ApiErrorHandler } from '@/src/lib/utils';
-import { Save, X, User, FileText, Phone } from 'lucide-react';
+import { Save, ArrowLeft, User, FileText, Phone } from 'lucide-react';
 
 export default function EditReclamantePage() {
   const router = useRouter();
@@ -139,9 +139,14 @@ export default function EditReclamantePage() {
           </div>
         )}
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold">Editar Reclamante</h1>
-          <p className="text-gray-600">Atualize os dados do reclamante</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold">Editar Reclamante</h1>
+            <p className="text-gray-600">Atualize os dados do reclamante</p>
+          </div>
+          <Link href={`/reclamantes/${id}`}>
+            <Button variant="outline" icon={<ArrowLeft size={18} />}>Voltar para detalhes</Button>
+          </Link>
         </div>
 
         <Card hover gradient>
@@ -165,13 +170,10 @@ export default function EditReclamantePage() {
 
               <Input label="Telefone" name="telefone" value={formData.telefone} onChange={handleChange} error={errors.telefone} placeholder="Ex: (11) 99999-9999" icon={<Phone size={20} />} />
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t-2 border-gradient-to-r from-blue-200 to-purple-200 dark:border-purple-700/50">
+              <div className="pt-8 border-t-2 border-gradient-to-r from-blue-200 to-purple-200 dark:border-purple-700/50">
                 <Button type="submit" variant="primary" size="lg" fullWidth loading={submitting} disabled={submitting} icon={<Save size={20} />}>
                   {submitting ? 'Salvando...' : 'Salvar alterações'}
                 </Button>
-                <Link href={`/reclamantes/${id}`} className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" fullWidth icon={<X size={20} />}>Cancelar</Button>
-                </Link>
               </div>
             </form>
           </CardBody>
