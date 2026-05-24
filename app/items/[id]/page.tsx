@@ -144,7 +144,6 @@ export default function ItemDetailPage() {
     const handleInputChange = (nextValue: string) => {
       setQuery(nextValue);
       setOpen(Boolean(nextValue.trim()));
-      onChange('');
     };
 
     const handleBlur = () => {
@@ -247,8 +246,12 @@ export default function ItemDetailPage() {
       data_encontro: normalizedDate,
       descricao: String(itemData.descricao || ''),
       status: normalizeItemStatus(String(itemData.status || '')),
-      local_id: String(itemData.local_id || itemData.localId || ''),
-      responsavel_id: String(itemData.responsavel_id || itemData.responsavelId || ''),
+      local_id: String(
+        itemData.local_id || itemData.localId || ((itemData.local as any)?.id ?? (itemData.local as any)?.ID) || ''
+      ),
+      responsavel_id: String(
+        itemData.responsavel_id || itemData.responsavelId || ((itemData.responsavel as any)?.id ?? (itemData.responsavel as any)?.ID) || ''
+      ),
     });
   }, [itemData]);
 

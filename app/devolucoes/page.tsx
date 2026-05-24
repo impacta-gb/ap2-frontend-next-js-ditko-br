@@ -340,6 +340,7 @@ export default function DevolucoesPage() {
                       variant="danger"
                       size="sm"
                       fullWidth
+                      className="col-span-2"
                       loading={actionLoadingId === String(dev.id)}
                       onClick={() => handleDelete(dev)}
                       icon={<Trash2 size={16} />}
